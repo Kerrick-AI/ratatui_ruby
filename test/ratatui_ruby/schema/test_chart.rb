@@ -33,19 +33,10 @@ module RatatuiRuby
         block: Widgets::Block.new(title: "Test Chart"),
       )
 
-      RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-      buffer = RatatuiRuby.get_buffer_content
-
-      # Check for axis titles
-      assert_includes buffer, "Time"
-      assert_includes buffer, "Value"
-      # Check for block title
-      assert_includes buffer, "Test Chart"
-      # Check for dataset name
-      assert_includes buffer, "TestDS"
-      # Check for labels
-      assert_includes buffer, "0"
-      assert_includes buffer, "10"
+      with_test_terminal(80, 24) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        assert_snapshot("chart_rendering")
+      end
     end
 
     def test_axis_labels_alignment
@@ -58,7 +49,6 @@ module RatatuiRuby
         ),
       ]
 
-      # Test with centered X-axis labels and right-aligned Y-axis labels
       chart = Widgets::Chart.new(
         datasets:,
         x_axis: Widgets::Axis.new(
@@ -76,14 +66,10 @@ module RatatuiRuby
         block: Widgets::Block.new(title: "Aligned Chart"),
       )
 
-      RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-      buffer = RatatuiRuby.get_buffer_content
-
-      # Verify the chart renders with alignment settings
-      assert_includes buffer, "Time"
-      assert_includes buffer, "Value"
-      assert_includes buffer, "Aligned Chart"
-      assert_includes buffer, "TestDS"
+      with_test_terminal(80, 24) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        assert_snapshot("axis_labels_alignment")
+      end
     end
 
     def test_styled_axis_title_renders_content_not_inspect_string
@@ -103,15 +89,8 @@ module RatatuiRuby
 
       with_test_terminal(40, 10) do
         RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-        content = buffer_content.join("\n")
-
-        # Should render the styled title content, not inspect string
-        assert_includes content, "StyledTime", "Styled axis title should appear in output"
-        refute_includes content, "#<data", "Inspect string should not appear"
-
-        # Verify styling (cyan = ANSI 36)
-        ansi_output = render_rich_buffer
-        assert_includes ansi_output, "\e[36m", "Axis title should have cyan foreground"
+        # Verifies content ("StyledTime" renders) and styling (cyan foreground)
+        assert_snapshots("styled_axis_title")
       end
     end
 
@@ -132,15 +111,8 @@ module RatatuiRuby
 
       with_test_terminal(40, 10) do
         RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-        content = buffer_content.join("\n")
-
-        # Should render the styled dataset name, not inspect string
-        assert_includes content, "StyledDS", "Styled dataset name should appear in output"
-        refute_includes content, "#<data", "Inspect string should not appear"
-
-        # Verify styling (green = ANSI 32)
-        ansi_output = render_rich_buffer
-        assert_includes ansi_output, "\e[32m", "Dataset name should have green foreground"
+        # Verifies content ("StyledDS" renders) and styling (green foreground)
+        assert_snapshots("styled_dataset_name")
       end
     end
 

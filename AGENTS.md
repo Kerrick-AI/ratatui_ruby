@@ -30,7 +30,8 @@ Architecture:
 - Every file MUST begin with an SPDX-compliant header. Use `AGPL-3.0-or-later` for code; `CC-BY-SA-4.0` for documentation. `reuse annotate` can help you generate the header. **For Ruby files**, wrap SPDX comments in `#--` / `#++` to hide them from RDoc output.
 - Every line of Ruby MUST be covered by tests that would stand up to mutation testing.
   - Tests must be meaningful and verify specific behavior or rendering output; simply verifying that code "doesn't crash" is insufficient and unacceptable.
-  - For UI widgets, this means using `with_test_terminal` to verify EVERY character of the terminal buffer's content.
+  - **Prefer snapshot tests** (`assert_snapshots`, plural) over manual `buffer_content` assertions for UI widgets. Snapshots are self-documenting and easier to maintain.
+  - For UI widgets, use `with_test_terminal` and snapshot assertions to verify terminal buffer content.
 - Every line of Rust MUST be covered by tests that would stand up to mutation testing.
   - Tests must be meaningful; simply verifying that code "doesn't crash" or "compiles" is insufficient and unacceptable.
   - Each widget implementation must have a `tests` module with unit tests verifying basic rendering.

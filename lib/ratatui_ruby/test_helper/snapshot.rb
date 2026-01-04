@@ -74,6 +74,8 @@ module RatatuiRuby
       # relative to the test file calling this method. It assumes a "snapshots" directory
       # exists in the same directory as the test file.
       #
+      # You probably want to use +assert_rich_snapshot+ instead. (TODO: explain why)
+      #
       #   # In test/test_login.rb
       #   assert_snapshot("login_screen")
       #   # Look for: test/snapshots/login_screen.txt
@@ -93,6 +95,7 @@ module RatatuiRuby
 
         assert_screen_matches(snapshot_path, msg, &)
       end
+      # TODO: alias assert_plain_snapshot
 
       ##
       # Asserts that the current screen content matches the expected content.
@@ -252,6 +255,23 @@ module RatatuiRuby
             assert_equal exp, act, "#{msg}: Rich content mismatch at line #{i + 1}"
           end
         end
+      end
+
+      ##
+      # Asserts both plain text and rich (ANSI-styled) snapshots match.
+      #
+      # A convenience method that calls both +assert_snapshot+ and +assert_rich_snapshot+
+      # with the same name. Use this when you want to generate both +.txt+ and +.ansi+
+      # snapshot files for documentation and display purposes.
+      #
+      #   assert_snapshots("login_screen")
+      #   # Creates/compares: snapshots/login_screen.txt AND snapshots/login_screen.ansi
+      #
+      # [name] String snapshot name (without extension).
+      # [msg] String optional failure message.
+      def assert_snapshots(name, msg = nil)
+        assert_snapshot(name, msg)
+        assert_rich_snapshot(name, msg)
       end
 
       ##

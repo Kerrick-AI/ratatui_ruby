@@ -285,4 +285,21 @@ class TestTestHelperModule < Minitest::Test
       end
     end
   end
+
+  def test_assert_snapshots_calls_both
+    with_test_terminal(20, 2) do
+      # Use a mock to verify both methods are called with correct arguments
+      snapshot_calls = []
+      rich_snapshot_calls = []
+
+      stub :assert_snapshot, -> (name, _msg = nil) { snapshot_calls << name } do
+        stub :assert_rich_snapshot, -> (name, _msg = nil) { rich_snapshot_calls << name } do
+          assert_snapshots("combined_snapshot")
+        end
+      end
+
+      assert_equal ["combined_snapshot"], snapshot_calls
+      assert_equal ["combined_snapshot"], rich_snapshot_calls
+    end
+  end
 end
