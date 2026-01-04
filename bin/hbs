@@ -1,6 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 ####
 # ======================================================================
@@ -8,170 +12,341 @@
 # ======================================================================
 #
 # SYNOPSIS
-#     bin/hbs [-n|--no-wait]
+#     bin/hbs [-n|--no-wait] [-b|--builds N] [-y|--yes]
 #
 # DESCRIPTION
 #     Check SourceHut builds for the current HEAD commit and wait for
 #     them to complete. Announces result via macOS text-to-speech.
 #
-#     The script looks for builds matching the current git HEAD:
-#     - If builds are running, waits for them to complete
-#     - If builds already completed, reports their pass/fail status
-#     - If no builds exist, waits for them to appear (up to 30 seconds)
+#     Fetches from origin first. If HEAD has not been pushed, prompts
+#     to watch latest builds anyway (or auto-confirms with -y). Watches
+#     builds until complete, then reports pass/fail with clear visual
+#     output. Exit 0 only if all builds for HEAD passed.
 #
 #     This makes it reliable for chaining: bin/hbs && rake release
 #
 # OPTIONS
-#     -n, --no-wait      Don't wait for builds to appear; exit 1
-#                        immediately if none exist for current commit.
+#     -n, --no-wait      Exit 1 immediately if no builds exist for HEAD.
+#     -b, --builds N     Number of builds to watch (default: count of
+#                        .yml files in .builds/ directory).
+#     -y, --yes          Auto-confirm all prompts (non-interactive).
 #
 # EXIT STATUS
 #     0                  All builds for HEAD passed
-#     1                  At least one build failed, or no builds found
+#     1                  Build failed, no builds found, or HEAD not pushed
 #
 # EXAMPLES
 #     Wait for builds and release if they pass:
 #     bin/hbs && bundle exec rake release
 #
-#     Run in background:
-#     bin/hbs &
+#     Non-interactive (auto-confirm prompts):
+#     bin/hbs -y
 #
 #     Quick check without waiting:
 #     bin/hbs -n
 #
 # DEPENDENCIES
-#     hut                SourceHut CLI (https://sr.ht/~emersion/hut/)
+#     hut                SourceHut CLI (https://sr.ht/~xenrox/hut/)
 #     git                To get current HEAD commit
 #     say                macOS text-to-speech
 #
 # ======================================================================
 
-# Parse options
-WAIT_FOR_BUILDS=1
-while [ $# -gt 0 ]; do
-  case "$1" in
-    -n|--no-wait)
-      WAIT_FOR_BUILDS=0
-      shift
-      ;;
-    *)
-      echo "Unknown option: $1" >&2
+require "optparse"
+require "open3"
+
+Commit = Data.define(:short_sha) do
+  def self.head
+    sha = `git rev-parse --short HEAD 2>/dev/null`.strip
+    raise "Not in a git repository" if sha.empty?
+
+    new(short_sha: sha)
+  end
+
+  def self.origin_head
+    sha = `git rev-parse --short origin/HEAD 2>/dev/null`.strip
+    return nil if sha.empty?
+
+    new(short_sha: sha)
+  end
+
+  def pushed?
+    system("git", "merge-base", "--is-ancestor", short_sha, "origin/HEAD",
+      out: File::NULL, err: File::NULL)
+  end
+
+  def commits_ahead
+    `git rev-list --count origin/HEAD..HEAD 2>/dev/null`.strip.to_i
+  end
+end
+
+Build = Data.define(:id, :status) do
+  def running?
+    %w[RUNNING PENDING QUEUED].include?(status)
+  end
+
+  def failed?
+    status == "FAILED"
+  end
+
+  def show
+    system("hut", "builds", "show", id.to_s)
+  end
+
+  def refresh
+    output, = Open3.capture2("hut", "builds", "show", id.to_s)
+    new_status = output.lines.first(3).join.match(/RUNNING|SUCCESS|FAILED|PENDING|QUEUED/)&.[](0) || status
+    Build.new(id:, status: new_status)
+  end
+end
+
+BuildSet = Data.define(:builds) do
+  def self.for_commit(commit)
+    output, = Open3.capture2("hut", "builds", "list")
+    ids = output.lines
+      .each_cons(6)
+      .select { |chunk| chunk.any? { |l| l.include?(commit.short_sha) } }
+      .filter_map { |chunk| chunk.first[/#(\d+)/, 1]&.to_i }
+      .uniq
+
+    builds = ids.map { |id| Build.new(id:, status: fetch_status(id)) }
+    new(builds:)
+  end
+
+  def self.running
+    output, = Open3.capture2("hut", "builds", "list")
+    ids = output.lines
+      .select { |l| l.match?(/RUNNING|PENDING|QUEUED/) }
+      .filter_map { |l| l[/#(\d+)/, 1]&.to_i }
+      .uniq
+
+    builds = ids.map { |id| Build.new(id:, status: fetch_status(id)) }
+    new(builds:)
+  end
+
+  def self.latest(count = 4)
+    output, = Open3.capture2("hut", "builds", "list")
+    ids = output.lines
+      .filter_map { |l| l[/#(\d+)/, 1]&.to_i }
+      .uniq
+      .first(count)
+
+    builds = ids.map { |id| Build.new(id:, status: fetch_status(id)) }
+    new(builds:)
+  end
+
+  def self.fetch_status(id)
+    output, = Open3.capture2("hut", "builds", "show", id.to_s)
+    output.lines.first(3).join.match(/RUNNING|SUCCESS|FAILED|PENDING|QUEUED/)&.[](0) || "UNKNOWN"
+  end
+
+  def empty?
+    builds.empty?
+  end
+
+  def any_running?
+    builds.any?(&:running?)
+  end
+
+  def any_failed?
+    builds.any?(&:failed?)
+  end
+
+  def show_all
+    builds.each(&:show)
+  end
+
+  def refresh
+    BuildSet.new(builds: builds.map(&:refresh))
+  end
+
+  def ids
+    builds.map(&:id)
+  end
+end
+
+class BuildWatch
+  POLL_INTERVAL = 30
+  WAIT_INTERVAL = 5
+  MAX_WAIT_ATTEMPTS = 6
+
+  def initialize(wait_for_builds: true, build_count: 4, auto_yes: false)
+    @wait_for_builds = wait_for_builds
+    @build_count = build_count
+    @auto_yes = auto_yes
+  end
+
+  def run
+    check_dependencies!
+    commit = Commit.head
+    system("git", "fetch", "--quiet", out: File::NULL, err: File::NULL)
+    origin = Commit.origin_head
+
+    unless commit.pushed?
+      return handle_unpushed(commit, origin)
+    end
+
+    puts "Looking for builds for commit #{commit.short_sha}..."
+
+    build_set = find_builds(commit)
+    if build_set.empty?
+      puts
+      puts "=" * 60
+      say("No builds found")
+      puts "✗✗✗ NO BUILDS FOUND ✗✗✗"
+      puts "Commit: #{commit.short_sha}"
+      puts "=" * 60
       exit 1
-      ;;
-  esac
-done
+    end
 
-# Check dependencies
-if ! command -v hut >/dev/null 2>&1; then
-  echo "Error: 'hut' not found. Install from https://sr.ht/~emersion/hut/" >&2
-  exit 1
-fi
+    puts "Found builds: #{build_set.ids.join(', ')}"
+    watch(build_set) if build_set.any_running?
+    report(build_set.refresh)
+  end
 
-if ! command -v say >/dev/null 2>&1; then
-  echo "Error: 'say' not found. This script requires macOS." >&2
-  exit 1
-fi
+  private def check_dependencies!
+    %w[hut say].each do |cmd|
+      unless system("command", "-v", cmd, out: File::NULL, err: File::NULL)
+        warn "Error: '#{cmd}' not found."
+        exit 1
+      end
+    end
+  end
 
-# Get current HEAD commit (short hash)
-HEAD_COMMIT=$(git rev-parse --short HEAD 2>/dev/null)
-if [ -z "$HEAD_COMMIT" ]; then
-  echo "Error: Not in a git repository or git not available." >&2
-  exit 1
-fi
+  private def find_builds(commit)
+    attempts = 0
+    loop do
+      build_set = BuildSet.for_commit(commit)
+      return build_set unless build_set.empty?
+      return build_set unless @wait_for_builds
 
-echo "Looking for builds for commit $HEAD_COMMIT..."
+      attempts += 1
+      if attempts >= MAX_WAIT_ATTEMPTS
+        return build_set
+      end
 
-# Function to find builds for current commit
-find_builds_for_commit() {
-  # hut builds list output includes commit info; grep for our commit
-  hut builds list 2>/dev/null | grep -B5 "$HEAD_COMMIT" | grep -E "^#[0-9]+" | awk -F'#| ' '{print $2}'
-}
+      puts "No builds found, waiting... (#{attempts}/#{MAX_WAIT_ATTEMPTS})"
+      sleep WAIT_INTERVAL
+    end
+  end
 
-# Function to get build status
-get_build_status() {
-  hut builds show "$1" 2>&1 | head -3 | grep -oE "(RUNNING|SUCCESS|FAILED|PENDING|QUEUED)"
-}
+  private def handle_unpushed(commit, origin)
+    ahead = commit.commits_ahead
+    origin_sha = origin&.short_sha || "unknown"
 
-# Wait for builds to appear (they may not start immediately after git push)
-ATTEMPTS=0
-MAX_ATTEMPTS=6
-BUILD_IDS=""
+    puts
+    puts "Your branch is ahead of 'origin' by #{ahead} commit#{'s' if ahead != 1}."
+    puts "  Local HEAD:  #{commit.short_sha}"
+    puts "  Origin HEAD: #{origin_sha}"
+    puts
 
-while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
-  BUILD_IDS=$(find_builds_for_commit)
-  if [ -n "$BUILD_IDS" ]; then
-    break
-  fi
-  
-  if [ $WAIT_FOR_BUILDS -eq 0 ]; then
-    echo "No builds found for commit $HEAD_COMMIT (--no-wait specified)."
+    unless @auto_yes
+      print "Watch latest SourceHut builds anyway? [Y/n] "
+      reply = $stdin.gets&.strip || ""
+      if reply.downcase.start_with?("n")
+        puts "Exiting (builds not verified)."
+        exit 1
+      end
+    end
+
+    build_set = BuildSet.latest(@build_count)
+    if build_set.empty?
+      puts
+      puts "=" * 60
+      say("No builds found")
+      puts "✗✗✗ NO BUILDS ON SOURCEHUT ✗✗✗"
+      puts "=" * 60
+      exit 1
+    end
+
+    puts "Latest builds: #{build_set.ids.join(', ')}"
+    watch(build_set) if build_set.any_running?
+
+    final_set = build_set.refresh
+    puts "---"
+    final_set.show_all
+    puts
+    puts "=" * 60
+    if final_set.any_failed?
+      say("Builds have Failed")
+      puts "✗✗✗ BUILDS FAILED ✗✗✗"
+    else
+      say("Builds have Passed")
+      puts "✓✓✓ BUILDS PASSED ✓✓✓"
+    end
+
+    # Recheck if HEAD is now pushed (user may have pushed while watching)
+    current_head = Commit.head
+    if current_head.pushed?
+      puts "HEAD #{current_head.short_sha} is now pushed. Re-run to verify."
+    else
+      puts "HEAD #{current_head.short_sha} still not pushed."
+    end
+    puts "=" * 60
     exit 1
-  fi
-  
-  ATTEMPTS=$((ATTEMPTS + 1))
-  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-    echo "No builds found for commit $HEAD_COMMIT, waiting... ($ATTEMPTS/$MAX_ATTEMPTS)"
-    sleep 5
-  fi
-done
+  end
 
-if [ -z "$BUILD_IDS" ]; then
-  echo "No builds found for commit $HEAD_COMMIT after ${MAX_ATTEMPTS} attempts."
-  say "No builds found"
-  exit 1
-fi
+  private def watch(build_set)
+    say("Watching Builds")
+    puts "---"
+    build_set.show_all
 
-echo "Found builds: $BUILD_IDS"
+    current = build_set
+    while current.any_running?
+      sleep POLL_INTERVAL
+      puts "---"
+      current = current.refresh
+      current.show_all
+    end
+  end
 
-# Check if any builds are still running
-any_running() {
-  for id in $BUILD_IDS; do
-    status=$(get_build_status "$id")
-    case "$status" in
-      RUNNING|PENDING|QUEUED)
-        return 0
-        ;;
-    esac
-  done
-  return 1
-}
+  private def report(build_set)
+    puts
+    puts "=" * 60
 
-# If builds are running, watch them
-if any_running; then
-  say "Watching Builds"
-  echo "---"
-  
-  # Show initial status
-  for id in $BUILD_IDS; do
-    hut builds show "$id"
-  done
-  
-  # Poll until none are running
-  while any_running; do
-    sleep 30
-    echo "---"
-    for id in $BUILD_IDS; do
-      hut builds show "$id"
-    done
-  done
-fi
+    if build_set.any_failed?
+      say("Builds have Failed")
+      puts "✗✗✗ BUILDS FAILED ✗✗✗"
+      puts "=" * 60
+      exit 1
+    else
+      say("Builds have Passed")
+      puts "✓✓✓ BUILDS PASSED ✓✓✓"
+      puts "=" * 60
+      exit 0
+    end
+  end
 
-# Check final status of all builds
-FAILED=0
-for id in $BUILD_IDS; do
-  status=$(get_build_status "$id")
-  if [ "$status" = "FAILED" ]; then
-    FAILED=1
-    break
-  fi
-done
+  private def say(message)
+    system("say", message)
+  end
+end
 
-if [ $FAILED -eq 1 ]; then
-  say "Builds have Failed"
-  echo "❌ Builds have Failed"
-  exit 1
-else
-  say "Builds have Passed"
-  echo "✅ Builds have Passed"
-  exit 0
-fi
+# Parse options
+default_build_count = Dir.glob(".builds/*.yml").size
+default_build_count = 4 if default_build_count.zero?
+
+options = { wait_for_builds: true, build_count: default_build_count, auto_yes: false }
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/hbs [OPTIONS]"
+
+  opts.on("-n", "--no-wait", "Don't wait for builds to appear") do
+    options[:wait_for_builds] = false
+  end
+
+  opts.on("-b", "--builds N", Integer, "Number of builds to watch (default: #{default_build_count})") do |n|
+    options[:build_count] = n
+  end
+
+  opts.on("-y", "--yes", "Auto-confirm all prompts") do
+    options[:auto_yes] = true
+  end
+
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+BuildWatch.new(**options).run
