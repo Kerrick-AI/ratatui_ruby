@@ -31,7 +31,7 @@ class TestWidgetCanvasDemo < Minitest::Test
       # without modifying the app, we accept that it will render the state at t=0.1.
       # Since math is deterministic, this should be fine as long as we don't sleep randomly.
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
     end
   end
 end

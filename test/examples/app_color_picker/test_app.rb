@@ -21,7 +21,7 @@ class TestAppColorPicker < Minitest::Test
       app = AppColorPicker.new
       app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -48,7 +48,7 @@ class TestAppColorPicker < Minitest::Test
       app = AppColorPicker.new
       app.run
 
-      assert_snapshot("after_red_input")
+      assert_snapshots("after_red_input")
       assert_rich_snapshot("after_red_input")
     end
   end
@@ -61,7 +61,7 @@ class TestAppColorPicker < Minitest::Test
       app = AppColorPicker.new
       app.run
 
-      assert_snapshot("after_paste")
+      assert_snapshots("after_paste")
       assert_rich_snapshot("after_paste")
     end
   end
@@ -81,7 +81,7 @@ class TestAppColorPicker < Minitest::Test
         app = AppColorPicker.new
         app.run
 
-        assert_snapshot("copy_dialog")
+        assert_snapshots("copy_dialog")
         assert_rich_snapshot("copy_dialog")
       end
     end
@@ -103,7 +103,7 @@ class TestAppColorPicker < Minitest::Test
         app = AppColorPicker.new
         app.run
 
-        assert_snapshot("after_copy_confirm")
+        assert_snapshots("after_copy_confirm")
         assert_rich_snapshot("after_copy_confirm")
       end
     end

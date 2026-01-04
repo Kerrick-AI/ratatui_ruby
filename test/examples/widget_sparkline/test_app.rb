@@ -23,7 +23,7 @@ class TestWidgetSparklineDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetSparklineDemo < Minitest::Test
       inject_keys(:up, :q)
       @app.run
 
-      assert_snapshot("after_data_cycle_up")
+      assert_snapshots("after_data_cycle_up")
       assert_rich_snapshot("after_data_cycle_up")
     end
   end
@@ -43,7 +43,7 @@ class TestWidgetSparklineDemo < Minitest::Test
       inject_keys(:d, :q)
       @app.run
 
-      assert_snapshot("after_direction_cycle")
+      assert_snapshots("after_direction_cycle")
       assert_rich_snapshot("after_direction_cycle")
     end
   end
@@ -53,7 +53,7 @@ class TestWidgetSparklineDemo < Minitest::Test
       inject_keys(:c, :c, :q)
       @app.run
 
-      assert_snapshot("after_color_cycle")
+      assert_snapshots("after_color_cycle")
       assert_rich_snapshot("after_color_cycle")
     end
   end
@@ -63,7 +63,7 @@ class TestWidgetSparklineDemo < Minitest::Test
       inject_keys(:m, :m, :m, :q)
       @app.run
 
-      assert_snapshot("after_marker_cycle")
+      assert_snapshots("after_marker_cycle")
       assert_rich_snapshot("after_marker_cycle")
     end
   end
@@ -73,7 +73,7 @@ class TestWidgetSparklineDemo < Minitest::Test
       inject_keys(:s, :s, :q)
       @app.run
 
-      assert_snapshot("after_style_cycle")
+      assert_snapshots("after_style_cycle")
       assert_rich_snapshot("after_style_cycle")
     end
   end
@@ -83,7 +83,7 @@ class TestWidgetSparklineDemo < Minitest::Test
       inject_keys(:b, :q)
       @app.run
 
-      assert_snapshot("after_bar_set_cycle")
+      assert_snapshots("after_bar_set_cycle")
       assert_rich_snapshot("after_bar_set_cycle")
     end
   end

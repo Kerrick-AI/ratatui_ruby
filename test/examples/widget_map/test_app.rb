@@ -26,7 +26,7 @@ class TestWidgetMapDemo < Minitest::Test
         @app.run
       end
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -38,7 +38,7 @@ class TestWidgetMapDemo < Minitest::Test
         @app.run
       end
 
-      assert_snapshot("after_labels_off")
+      assert_snapshots("after_labels_off")
       assert_rich_snapshot("after_labels_off")
     end
   end
@@ -50,7 +50,7 @@ class TestWidgetMapDemo < Minitest::Test
         @app.run
       end
 
-      assert_snapshot("after_bg_blue")
+      assert_snapshots("after_bg_blue")
       assert_rich_snapshot("after_bg_blue")
     end
   end
@@ -62,7 +62,7 @@ class TestWidgetMapDemo < Minitest::Test
         @app.run
       end
 
-      assert_snapshot("after_marker_cycle")
+      assert_snapshots("after_marker_cycle")
       assert_rich_snapshot("after_marker_cycle")
     end
   end

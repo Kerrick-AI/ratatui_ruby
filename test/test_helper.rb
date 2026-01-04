@@ -38,6 +38,12 @@ module Warning
         return
       end
 
+      # Ignore deprecation warnings (these are intentional and tested explicitly)
+      if message.include?("deprecated")
+        super
+        return
+      end
+
       # Raise strictly on any other warning
       raise message
     end

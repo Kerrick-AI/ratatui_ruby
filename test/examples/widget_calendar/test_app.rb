@@ -21,8 +21,8 @@ class TestWidgetCalendarDemo < Minitest::Test
     @app = WidgetCalendar.new(date: FIXED_DATE)
   end
 
-  private def assert_normalized_snapshot(snapshot_name)
-    assert_snapshot(snapshot_name)
+  private def assert_normalized_snapshots(snapshot_name)
+    assert_snapshots(snapshot_name)
     assert_rich_snapshot(snapshot_name)
   end
 
@@ -31,7 +31,7 @@ class TestWidgetCalendarDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_normalized_snapshot("initial_render")
+      assert_normalized_snapshots("initial_render")
     end
   end
 
@@ -40,7 +40,7 @@ class TestWidgetCalendarDemo < Minitest::Test
       inject_keys("w", :q)
       @app.run
 
-      assert_normalized_snapshot("after_weekdays_toggle")
+      assert_normalized_snapshots("after_weekdays_toggle")
     end
   end
 
@@ -49,7 +49,7 @@ class TestWidgetCalendarDemo < Minitest::Test
       inject_keys("h", :q)
       @app.run
 
-      assert_normalized_snapshot("after_header_toggle")
+      assert_normalized_snapshots("after_header_toggle")
     end
   end
 
@@ -58,7 +58,7 @@ class TestWidgetCalendarDemo < Minitest::Test
       inject_keys("s", :q)
       @app.run
 
-      assert_normalized_snapshot("after_surrounding_toggle")
+      assert_normalized_snapshots("after_surrounding_toggle")
     end
   end
 
@@ -67,7 +67,7 @@ class TestWidgetCalendarDemo < Minitest::Test
       inject_keys("e", :q)
       @app.run
 
-      assert_normalized_snapshot("after_events_toggle")
+      assert_normalized_snapshots("after_events_toggle")
     end
   end
 end

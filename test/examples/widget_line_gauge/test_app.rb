@@ -23,7 +23,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_keys(:right, :right, :q)
       @app.run
 
-      assert_snapshot("after_ratio_right")
+      assert_snapshots("after_ratio_right")
       assert_rich_snapshot("after_ratio_right")
     end
   end
@@ -43,7 +43,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_keys(:left, :q)
       @app.run
 
-      assert_snapshot("after_ratio_left")
+      assert_snapshots("after_ratio_left")
       assert_rich_snapshot("after_ratio_left")
     end
   end
@@ -53,7 +53,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_keys(:f, :q)
       @app.run
 
-      assert_snapshot("after_filled_symbol_cycle")
+      assert_snapshots("after_filled_symbol_cycle")
       assert_rich_snapshot("after_filled_symbol_cycle")
     end
   end
@@ -63,7 +63,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_keys(:c, :c, :q)
       @app.run
 
-      assert_snapshot("after_filled_color_cycle")
+      assert_snapshots("after_filled_color_cycle")
       assert_rich_snapshot("after_filled_color_cycle")
     end
   end
@@ -73,7 +73,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_keys(:u, :q)
       @app.run
 
-      assert_snapshot("after_unfilled_symbol_cycle")
+      assert_snapshots("after_unfilled_symbol_cycle")
       assert_rich_snapshot("after_unfilled_symbol_cycle")
     end
   end
@@ -83,7 +83,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_keys(:x, :q)
       @app.run
 
-      assert_snapshot("after_unfilled_color_cycle")
+      assert_snapshots("after_unfilled_color_cycle")
       assert_rich_snapshot("after_unfilled_color_cycle")
     end
   end
@@ -93,7 +93,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_keys(:b, :q)
       @app.run
 
-      assert_snapshot("after_base_style_cycle")
+      assert_snapshots("after_base_style_cycle")
       assert_rich_snapshot("after_base_style_cycle")
     end
   end
@@ -103,7 +103,7 @@ class TestLineGaugeDemo < Minitest::Test
       inject_keys(:right, :f, :c, :b, :q)
       @app.run
 
-      assert_snapshot("after_multiple_changes")
+      assert_snapshots("after_multiple_changes")
       assert_rich_snapshot("after_multiple_changes")
     end
   end

@@ -23,7 +23,7 @@ class TestWidgetTextWidth < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetTextWidth < Minitest::Test
       inject_keys(:up, :q)
       @app.run
 
-      assert_snapshot("after_nav_up")
+      assert_snapshots("after_nav_up")
       assert_rich_snapshot("after_nav_up")
     end
   end
@@ -43,7 +43,7 @@ class TestWidgetTextWidth < Minitest::Test
       inject_keys(:down, :q)
       @app.run
 
-      assert_snapshot("after_nav_down")
+      assert_snapshots("after_nav_down")
       assert_rich_snapshot("after_nav_down")
     end
   end
@@ -53,7 +53,7 @@ class TestWidgetTextWidth < Minitest::Test
       inject_keys(:down, :q)
       @app.run
 
-      assert_snapshot("cjk_sample")
+      assert_snapshots("cjk_sample")
       assert_rich_snapshot("cjk_sample")
     end
   end
@@ -63,7 +63,7 @@ class TestWidgetTextWidth < Minitest::Test
       inject_keys(:down, :down, :down, :q)
       @app.run
 
-      assert_snapshot("mixed_sample")
+      assert_snapshots("mixed_sample")
       assert_rich_snapshot("mixed_sample")
     end
   end

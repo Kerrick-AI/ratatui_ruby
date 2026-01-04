@@ -54,7 +54,7 @@ class TestBarChart < Minitest::Test
     with_test_terminal(20, 5) do
       chart = RatatuiRuby::Widgets::BarChart.new(data: { "A" => 1, "B" => 2 }, bar_width: 3)
       RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-      assert_snapshot("barchart_render")
+      assert_snapshots("barchart_render")
     end
   end
 
@@ -66,7 +66,7 @@ class TestBarChart < Minitest::Test
         direction: :horizontal
       )
       RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-      assert_snapshot("barchart_horizontal")
+      assert_snapshots("barchart_horizontal")
     end
   end
 
@@ -98,7 +98,7 @@ class TestBarChart < Minitest::Test
         bar_set: :three_levels
       )
       RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-      assert_snapshot("barchart_three_levels")
+      assert_snapshots("barchart_three_levels")
     end
   end
 end

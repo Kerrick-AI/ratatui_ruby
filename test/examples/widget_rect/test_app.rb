@@ -23,7 +23,7 @@ class TestWidgetRect < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -34,7 +34,7 @@ class TestWidgetRect < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("after_sidebar_click")
+      assert_snapshots("after_sidebar_click")
       assert_rich_snapshot("after_sidebar_click")
     end
   end
@@ -45,7 +45,7 @@ class TestWidgetRect < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("after_content_click")
+      assert_snapshots("after_content_click")
       assert_rich_snapshot("after_content_click")
     end
   end
@@ -55,7 +55,7 @@ class TestWidgetRect < Minitest::Test
       inject_keys("down", :q)
       @app.run
 
-      assert_snapshot("after_nav_down")
+      assert_snapshots("after_nav_down")
       assert_rich_snapshot("after_nav_down")
     end
   end
@@ -65,7 +65,7 @@ class TestWidgetRect < Minitest::Test
       inject_keys("up", :q)
       @app.run
 
-      assert_snapshot("after_nav_up_wrap")
+      assert_snapshots("after_nav_up_wrap")
       assert_rich_snapshot("after_nav_up_wrap")
     end
   end
@@ -75,7 +75,7 @@ class TestWidgetRect < Minitest::Test
       inject_keys("left", :q)
       @app.run
 
-      assert_snapshot("after_width_shrink")
+      assert_snapshots("after_width_shrink")
       assert_rich_snapshot("after_width_shrink")
     end
   end
@@ -85,7 +85,7 @@ class TestWidgetRect < Minitest::Test
       inject_keys("right", :q)
       @app.run
 
-      assert_snapshot("after_width_expand")
+      assert_snapshots("after_width_expand")
       assert_rich_snapshot("after_width_expand")
     end
   end

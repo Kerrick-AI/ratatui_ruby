@@ -23,7 +23,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_keys(:s, :q)
       @app.run
 
-      assert_snapshot("after_style_switch")
+      assert_snapshots("after_style_switch")
       assert_rich_snapshot("after_style_switch")
     end
   end
@@ -43,7 +43,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_keys(:x, :q)
       @app.run
 
-      assert_snapshot("after_toggle_selection")
+      assert_snapshots("after_toggle_selection")
       assert_rich_snapshot("after_toggle_selection")
     end
   end
@@ -53,7 +53,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_keys(:down, :q)
       @app.run
 
-      assert_snapshot("after_navigate_down")
+      assert_snapshots("after_navigate_down")
       assert_rich_snapshot("after_navigate_down")
     end
   end
@@ -63,7 +63,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_keys(:up, :up, :q)
       @app.run
 
-      assert_snapshot("after_navigate_up_wrap")
+      assert_snapshots("after_navigate_up_wrap")
       assert_rich_snapshot("after_navigate_up_wrap")
     end
   end
@@ -73,7 +73,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_keys(:right, :q)
       @app.run
 
-      assert_snapshot("after_column_navigate")
+      assert_snapshots("after_column_navigate")
       assert_rich_snapshot("after_column_navigate")
     end
   end
@@ -83,7 +83,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_keys(:p, :q)
       @app.run
 
-      assert_snapshot("after_spacing_cycle")
+      assert_snapshots("after_spacing_cycle")
       assert_rich_snapshot("after_spacing_cycle")
     end
   end
@@ -93,7 +93,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_keys("+", :q)
       @app.run
 
-      assert_snapshot("after_col_space_increase")
+      assert_snapshots("after_col_space_increase")
       assert_rich_snapshot("after_col_space_increase")
     end
   end
@@ -103,7 +103,7 @@ class TestWidgetTableDemo < Minitest::Test
       inject_keys(:o, :q)
       @app.run
 
-      assert_snapshot("after_offset_mode_cycle")
+      assert_snapshots("after_offset_mode_cycle")
       assert_rich_snapshot("after_offset_mode_cycle")
     end
   end

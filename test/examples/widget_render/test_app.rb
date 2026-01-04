@@ -23,7 +23,7 @@ class TestWidgetRender < Minitest::Test
       inject_key("q")
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetRender < Minitest::Test
       inject_keys("n", "q")
       @app.run
 
-      assert_snapshot("after_cycle_next")
+      assert_snapshots("after_cycle_next")
       assert_rich_snapshot("after_cycle_next")
     end
   end
@@ -43,7 +43,7 @@ class TestWidgetRender < Minitest::Test
       inject_keys("p", "q")
       @app.run
 
-      assert_snapshot("after_cycle_previous")
+      assert_snapshots("after_cycle_previous")
       assert_rich_snapshot("after_cycle_previous")
     end
   end
@@ -53,7 +53,7 @@ class TestWidgetRender < Minitest::Test
       inject_keys("n", "n", "q")
       @app.run
 
-      assert_snapshot("border_widget")
+      assert_snapshots("border_widget")
       assert_rich_snapshot("border_widget")
     end
   end

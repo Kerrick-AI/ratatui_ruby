@@ -22,7 +22,7 @@ class TestWidgetCenterDemo < Minitest::Test
     with_test_terminal do
       inject_key(:q)
       @app.run
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
     end
   end
 
@@ -36,7 +36,7 @@ class TestWidgetCenterDemo < Minitest::Test
 
       @app.run
 
-      assert_snapshot("after_sizing")
+      assert_snapshots("after_sizing")
     end
   end
 end

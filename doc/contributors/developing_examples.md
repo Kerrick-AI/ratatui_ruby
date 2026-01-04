@@ -112,7 +112,7 @@ examples/
 test/examples/
   my_example/
     test_app.rb         ← REQUIRED: Tests (centralized, not local to example)
-    snapshots/          ← Auto-created by assert_snapshot
+    snapshots/          ← Auto-created by snapshot assertions
       initial_render.txt
 
 sig/examples/
@@ -223,7 +223,7 @@ class TestMyExampleApp < Minitest::Test
     with_test_terminal do
       inject_key(:q)
       @app.run
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
     end
   end
 end
@@ -231,7 +231,7 @@ end
 
 ## Snapshot Testing Pattern (REQUIRED)
 
-All example tests MUST use snapshot testing via the `assert_snapshot` API, not manual content assertions.
+All example tests MUST use snapshot testing via the `assert_snapshots` API, not manual content assertions.
 
 ### Why Snapshots
 
@@ -249,7 +249,7 @@ def test_initial_render
     inject_key(:q)
     @app.run
     
-    assert_snapshot("initial_render")
+    assert_snapshots("initial_render")
   end
 end
 ```
@@ -261,8 +261,8 @@ Snapshot auto-saved to: `test/examples/widget_foo/snapshots/initial_render.txt`
 For examples with timestamps, random data, or other non-deterministic output:
 
 ```ruby
-private def assert_normalized_snapshot(snapshot_name)
-  assert_snapshot(snapshot_name) do |actual|
+private def assert_normalized_snapshots(snapshot_name)
+  assert_plain_snapshot(snapshot_name) do |actual|
     actual.map do |line|
       line.gsub(/\d{2}:\d{2}:\d{2}/, "XX:XX:XX")  # Mask timestamps
            .gsub(/Random ID: \d+/, "Random ID: XXX")  # Mask random values
@@ -276,7 +276,7 @@ def test_after_event
     inject_key(:q)
     @app.run
     
-    assert_normalized_snapshot("after_event")
+    assert_normalized_snapshots("after_event")
   end
 end
 ```

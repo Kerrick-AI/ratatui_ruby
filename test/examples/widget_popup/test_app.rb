@@ -23,7 +23,7 @@ class TestWidgetPopupDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetPopupDemo < Minitest::Test
       inject_keys(" ", :q)
       @app.run
 
-      assert_snapshot("after_toggle_clear")
+      assert_snapshots("after_toggle_clear")
       assert_rich_snapshot("after_toggle_clear")
     end
   end

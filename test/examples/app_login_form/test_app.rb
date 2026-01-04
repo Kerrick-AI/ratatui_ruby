@@ -23,7 +23,7 @@ class TestLoginForm < Minitest::Test
       inject_keys(:esc)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestLoginForm < Minitest::Test
       inject_keys("a", :esc)
       @app.run
 
-      assert_snapshot("after_input")
+      assert_snapshots("after_input")
       assert_rich_snapshot("after_input")
     end
   end
@@ -43,7 +43,7 @@ class TestLoginForm < Minitest::Test
       inject_keys("u", "s", "e", "r", :enter, :q)
       @app.run
 
-      assert_snapshot("after_submit")
+      assert_snapshots("after_submit")
       assert_rich_snapshot("after_submit")
     end
   end

@@ -23,7 +23,7 @@ class TestGaugeDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestGaugeDemo < Minitest::Test
       inject_keys(:right, :q)
       @app.run
 
-      assert_snapshot("after_ratio_increment")
+      assert_snapshots("after_ratio_increment")
       assert_rich_snapshot("after_ratio_increment")
     end
   end
@@ -43,7 +43,7 @@ class TestGaugeDemo < Minitest::Test
       inject_keys(:left, :q)
       @app.run
 
-      assert_snapshot("after_ratio_decrement")
+      assert_snapshots("after_ratio_decrement")
       assert_rich_snapshot("after_ratio_decrement")
     end
   end
@@ -53,7 +53,7 @@ class TestGaugeDemo < Minitest::Test
       inject_keys(:g, :q)
       @app.run
 
-      assert_snapshot("after_color_cycle")
+      assert_snapshots("after_color_cycle")
       assert_rich_snapshot("after_color_cycle")
     end
   end
@@ -63,7 +63,7 @@ class TestGaugeDemo < Minitest::Test
       inject_keys(:b, :q)
       @app.run
 
-      assert_snapshot("after_background_cycle")
+      assert_snapshots("after_background_cycle")
       assert_rich_snapshot("after_background_cycle")
     end
   end
@@ -73,7 +73,7 @@ class TestGaugeDemo < Minitest::Test
       inject_keys(:u, :q)
       @app.run
 
-      assert_snapshot("after_unicode_toggle")
+      assert_snapshots("after_unicode_toggle")
       assert_rich_snapshot("after_unicode_toggle")
     end
   end
@@ -83,7 +83,7 @@ class TestGaugeDemo < Minitest::Test
       inject_keys(:l, :q)
       @app.run
 
-      assert_snapshot("after_label_cycle")
+      assert_snapshots("after_label_cycle")
       assert_rich_snapshot("after_label_cycle")
     end
   end
@@ -93,7 +93,7 @@ class TestGaugeDemo < Minitest::Test
       inject_keys(:right, :g, :b, :u, :l, :q)
       @app.run
 
-      assert_snapshot("after_multiple_interactions")
+      assert_snapshots("after_multiple_interactions")
       assert_rich_snapshot("after_multiple_interactions")
     end
   end

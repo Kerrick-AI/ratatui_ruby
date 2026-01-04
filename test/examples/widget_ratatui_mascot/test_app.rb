@@ -23,7 +23,7 @@ class TestWidgetRatatuiMascotDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetRatatuiMascotDemo < Minitest::Test
       inject_keys("b", :q)
       @app.run
 
-      assert_snapshot("after_block_toggle")
+      assert_snapshots("after_block_toggle")
       assert_rich_snapshot("after_block_toggle")
     end
   end

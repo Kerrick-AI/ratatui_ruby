@@ -23,7 +23,7 @@ class TestWidgetLayoutSplit < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetLayoutSplit < Minitest::Test
       inject_keys("d", :q)
       @app.run
 
-      assert_snapshot("after_direction_cycle")
+      assert_snapshots("after_direction_cycle")
       assert_rich_snapshot("after_direction_cycle")
     end
   end
@@ -43,7 +43,7 @@ class TestWidgetLayoutSplit < Minitest::Test
       inject_keys("f", :q)
       @app.run
 
-      assert_snapshot("after_flex_cycle")
+      assert_snapshots("after_flex_cycle")
       assert_rich_snapshot("after_flex_cycle")
     end
   end
@@ -53,7 +53,7 @@ class TestWidgetLayoutSplit < Minitest::Test
       inject_keys("c", :q)
       @app.run
 
-      assert_snapshot("after_constraint_cycle")
+      assert_snapshots("after_constraint_cycle")
       assert_rich_snapshot("after_constraint_cycle")
     end
   end
@@ -63,7 +63,7 @@ class TestWidgetLayoutSplit < Minitest::Test
       inject_keys("d", "d", "f", "f", "c", :q)
       @app.run
 
-      assert_snapshot("after_multiple_cycles")
+      assert_snapshots("after_multiple_cycles")
       assert_rich_snapshot("after_multiple_cycles")
     end
   end
@@ -74,7 +74,7 @@ class TestWidgetLayoutSplit < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("after_all_flex_cycles")
+      assert_snapshots("after_all_flex_cycles")
       assert_rich_snapshot("after_all_flex_cycles")
     end
   end

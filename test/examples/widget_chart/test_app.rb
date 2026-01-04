@@ -29,7 +29,7 @@ class TestChartDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -39,7 +39,7 @@ class TestChartDemo < Minitest::Test
       inject_keys("m", :q)
       @app.run
 
-      assert_snapshot("after_marker_cycle")
+      assert_snapshots("after_marker_cycle")
       assert_rich_snapshot("after_marker_cycle")
     end
   end
@@ -49,7 +49,7 @@ class TestChartDemo < Minitest::Test
       inject_keys("s", :q)
       @app.run
 
-      assert_snapshot("after_style_cycle")
+      assert_snapshots("after_style_cycle")
       assert_rich_snapshot("after_style_cycle")
     end
   end
@@ -59,7 +59,7 @@ class TestChartDemo < Minitest::Test
       inject_keys("x", :q)
       @app.run
 
-      assert_snapshot("after_x_align_cycle")
+      assert_snapshots("after_x_align_cycle")
       assert_rich_snapshot("after_x_align_cycle")
     end
   end
@@ -69,7 +69,7 @@ class TestChartDemo < Minitest::Test
       inject_keys("y", :q)
       @app.run
 
-      assert_snapshot("after_y_align_cycle")
+      assert_snapshots("after_y_align_cycle")
       assert_rich_snapshot("after_y_align_cycle")
     end
   end
@@ -79,7 +79,7 @@ class TestChartDemo < Minitest::Test
       inject_keys("m", "s", "x", "y", :q)
       @app.run
 
-      assert_snapshot("after_multiple_cycles")
+      assert_snapshots("after_multiple_cycles")
       assert_rich_snapshot("after_multiple_cycles")
     end
   end

@@ -20,7 +20,7 @@ class TestWidgetScrollbarDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -31,7 +31,7 @@ class TestWidgetScrollbarDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("after_scroll_down")
+      assert_snapshots("after_scroll_down")
       assert_rich_snapshot("after_scroll_down")
     end
   end
@@ -43,7 +43,7 @@ class TestWidgetScrollbarDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("after_scroll_up")
+      assert_snapshots("after_scroll_up")
       assert_rich_snapshot("after_scroll_up")
     end
   end
@@ -53,7 +53,7 @@ class TestWidgetScrollbarDemo < Minitest::Test
       inject_keys(:s, :q)
       @app.run
 
-      assert_snapshot("after_theme_cycle")
+      assert_snapshots("after_theme_cycle")
       assert_rich_snapshot("after_theme_cycle")
     end
   end

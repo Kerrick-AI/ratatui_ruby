@@ -23,7 +23,7 @@ class TestWidgetBarchartDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetBarchartDemo < Minitest::Test
       inject_keys(:d, :q)
       @app.run
 
-      assert_snapshot("after_data_cycle")
+      assert_snapshots("after_data_cycle")
       assert_rich_snapshot("after_data_cycle")
     end
   end
@@ -43,7 +43,7 @@ class TestWidgetBarchartDemo < Minitest::Test
       inject_keys(:v, :q)
       @app.run
 
-      assert_snapshot("after_direction_toggle")
+      assert_snapshots("after_direction_toggle")
       assert_rich_snapshot("after_direction_toggle")
     end
   end
@@ -53,7 +53,7 @@ class TestWidgetBarchartDemo < Minitest::Test
       inject_keys(:w, :a, :g, :q)
       @app.run
 
-      assert_snapshot("after_width_gap_changes")
+      assert_snapshots("after_width_gap_changes")
       assert_rich_snapshot("after_width_gap_changes")
     end
   end
@@ -63,7 +63,7 @@ class TestWidgetBarchartDemo < Minitest::Test
       inject_keys(:s, :x, :z, :b, :q)
       @app.run
 
-      assert_snapshot("after_style_changes")
+      assert_snapshots("after_style_changes")
       assert_rich_snapshot("after_style_changes")
     end
   end
@@ -73,7 +73,7 @@ class TestWidgetBarchartDemo < Minitest::Test
       inject_keys(:m, :q)
       @app.run
 
-      assert_snapshot("after_mode_toggle")
+      assert_snapshots("after_mode_toggle")
       assert_rich_snapshot("after_mode_toggle")
     end
   end

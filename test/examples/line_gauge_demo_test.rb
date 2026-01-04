@@ -55,7 +55,7 @@ class LineGaugeDemoTest < Minitest::Test
 
       RatatuiRuby.draw { |f| f.render_widget(layout, f.area) }
 
-      assert_snapshot("line_gauge_render")
+      assert_snapshots("line_gauge_render")
       assert_rich_snapshot("line_gauge_render")
     end
   end

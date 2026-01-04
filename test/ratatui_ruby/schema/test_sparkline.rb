@@ -29,7 +29,7 @@ class TestSparkline < Minitest::Test
     with_test_terminal(10, 3) do
       spark = RatatuiRuby::Widgets::Sparkline.new(data: [1, 2, 3, 4])
       RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
-      assert_snapshot("sparkline_render")
+      assert_snapshots("sparkline_render")
     end
   end
 
@@ -42,7 +42,7 @@ class TestSparkline < Minitest::Test
     with_test_terminal(10, 3) do
       spark = RatatuiRuby::Widgets::Sparkline.new(data: [1, 2, 3, 4], direction: :right_to_left)
       RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
-      assert_snapshot("sparkline_right_to_left")
+      assert_snapshots("sparkline_right_to_left")
     end
   end
 
@@ -115,7 +115,7 @@ class TestSparkline < Minitest::Test
     with_test_terminal(10, 3) do
       spark = RatatuiRuby::Widgets::Sparkline.new(data: [1, 2, 3, 4], bar_set: :nine_levels)
       RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
-      assert_snapshot("bar_set_nine_levels")
+      assert_snapshots("bar_set_nine_levels")
     end
   end
 
@@ -124,7 +124,7 @@ class TestSparkline < Minitest::Test
     with_test_terminal(10, 3) do
       spark = RatatuiRuby::Widgets::Sparkline.new(data: [1, 2, 3, 4], bar_set: :three_levels)
       RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
-      assert_snapshot("bar_set_three_levels")
+      assert_snapshots("bar_set_three_levels")
     end
   end
 end

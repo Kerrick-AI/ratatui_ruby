@@ -274,6 +274,18 @@ class TestTestHelperModule < Minitest::Test
     end
   end
 
+  def test_assert_snapshot_emits_deprecation_warning
+    with_test_terminal(20, 2) do
+      expected = ["Snapshot Content"]
+
+      stub :buffer_content, expected do
+        warning_output = capture_io { assert_snapshot("my_snapshot") }[1]
+        assert_match(/assert_snapshot is deprecated/, warning_output)
+        assert_match(/assert_plain_snapshot/, warning_output)
+      end
+    end
+  end
+
   def test_assert_snapshot
     with_test_terminal(20, 2) do
       # We created test/snapshots/my_snapshot.txt with "Snapshot Content"
@@ -286,14 +298,13 @@ class TestTestHelperModule < Minitest::Test
     end
   end
 
-  def test_assert_plain_snapshot_is_alias
+  def test_assert_plain_snapshot
     with_test_terminal(20, 2) do
-      # Verify that assert_plain_snapshot works the same as assert_snapshot
-      # by testing it against the same fixture
+      # Verify that assert_plain_snapshot works correctly as the primary method
       expected = ["Snapshot Content"]
 
       stub :buffer_content, expected do
-        # This should look for test/snapshots/my_snapshot.txt (same as assert_snapshot)
+        # This should look for test/snapshots/my_snapshot.txt
         assert_plain_snapshot("my_snapshot")
       end
     end
@@ -302,17 +313,55 @@ class TestTestHelperModule < Minitest::Test
   def test_assert_snapshots_calls_both
     with_test_terminal(20, 2) do
       # Use a mock to verify both methods are called with correct arguments
-      snapshot_calls = []
+      plain_snapshot_calls = []
       rich_snapshot_calls = []
 
-      stub :assert_snapshot, -> (name, _msg = nil) { snapshot_calls << name } do
-        stub :assert_rich_snapshot, -> (name, _msg = nil) { rich_snapshot_calls << name } do
+      stub :assert_plain_snapshot, -> (name, _msg = nil, snapshot_dir: nil) { plain_snapshot_calls << name } do
+        stub :assert_rich_snapshot, -> (name, _msg = nil, snapshot_dir: nil) { rich_snapshot_calls << name } do
           assert_snapshots("combined_snapshot")
         end
       end
 
-      assert_equal ["combined_snapshot"], snapshot_calls
+      assert_equal ["combined_snapshot"], plain_snapshot_calls
       assert_equal ["combined_snapshot"], rich_snapshot_calls
+    end
+  end
+
+  def test_assert_snapshots_passes_block_to_both
+    with_test_terminal(20, 2) do
+      # Verify that normalization blocks are passed through to both assertions
+      plain_block_received = false
+      rich_block_received = false
+
+      stub :assert_plain_snapshot, -> (name, _msg = nil, snapshot_dir: nil, &block) { plain_block_received = !block.nil? } do
+        stub :assert_rich_snapshot, -> (name, _msg = nil, snapshot_dir: nil, &block) { rich_block_received = !block.nil? } do
+          assert_snapshots("normalized_snapshot") do |lines|
+            lines.map { |l| l.gsub(/\d+/, "X") }
+          end
+        end
+      end
+
+      assert plain_block_received, "assert_plain_snapshot should receive the normalization block"
+      assert rich_block_received, "assert_rich_snapshot should receive the normalization block"
+    end
+  end
+
+  def test_assert_snapshots_resolves_path_from_test_file
+    with_test_terminal(20, 2) do
+      # Capture the paths passed to assert_screen_matches by assert_plain_snapshot
+      captured_paths = []
+
+      stub :assert_screen_matches, -> (path, _msg = nil, &_block) { captured_paths << path } do
+        # Stub assert_rich_snapshot to prevent side effects
+        stub :assert_rich_snapshot, -> (*_) {} do
+          assert_snapshots("test_snapshot")
+        end
+      end
+
+      # The path should be relative to THIS file (the test file), not snapshot.rb
+      expected_path = File.join(File.dirname(__FILE__), "snapshots", "test_snapshot.txt")
+      assert_equal expected_path, captured_paths.first, "Snapshot path should be relative to test file"
+      refute_includes captured_paths.first, "lib/ratatui_ruby", "Snapshot should NOT be in lib/"
     end
   end
 end

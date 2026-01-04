@@ -18,7 +18,7 @@ class TestWidgetCellDemo < Minitest::Test
       inject_key("q")
       WidgetCell.new.run
 
-      assert_snapshot("render")
+      assert_snapshots("render")
       assert_rich_snapshot("render")
     end
   end

@@ -25,7 +25,7 @@ class TestAppAllEvents < Minitest::Test
     with_test_terminal do
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("initial_state")
+      assert_normalized_snapshots("initial_state")
     end
   end
 
@@ -33,7 +33,7 @@ class TestAppAllEvents < Minitest::Test
     with_test_terminal do
       inject_keys("a", :q)
       @app.run
-      assert_normalized_snapshot("after_key_a")
+      assert_normalized_snapshots("after_key_a")
     end
   end
 
@@ -41,7 +41,7 @@ class TestAppAllEvents < Minitest::Test
     with_test_terminal do
       inject_keys(:ctrl_x, :q)
       @app.run
-      assert_normalized_snapshot("after_key_ctrl_x")
+      assert_normalized_snapshots("after_key_ctrl_x")
     end
   end
 
@@ -50,7 +50,7 @@ class TestAppAllEvents < Minitest::Test
       inject_click(x: 40, y: 12)
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_mouse_click")
+      assert_normalized_snapshots("after_mouse_click")
     end
   end
 
@@ -59,7 +59,7 @@ class TestAppAllEvents < Minitest::Test
       inject_event(RatatuiRuby::Event::FocusLost.new)
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_focus_lost")
+      assert_normalized_snapshots("after_focus_lost")
     end
   end
 
@@ -69,7 +69,7 @@ class TestAppAllEvents < Minitest::Test
       inject_event(RatatuiRuby::Event::FocusGained.new)
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_focus_regained")
+      assert_normalized_snapshots("after_focus_regained")
     end
   end
 
@@ -78,7 +78,7 @@ class TestAppAllEvents < Minitest::Test
       inject_event(RatatuiRuby::Event::Paste.new(content: "Hello World"))
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_paste")
+      assert_normalized_snapshots("after_paste")
     end
   end
 
@@ -87,7 +87,7 @@ class TestAppAllEvents < Minitest::Test
       inject_event(RatatuiRuby::Event::Resize.new(width: 100, height: 30))
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_resize")
+      assert_normalized_snapshots("after_resize")
     end
   end
 
@@ -97,7 +97,7 @@ class TestAppAllEvents < Minitest::Test
       inject_click(x: 10, y: 5)
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_multiple_events")
+      assert_normalized_snapshots("after_multiple_events")
     end
   end
 
@@ -126,7 +126,7 @@ class TestAppAllEvents < Minitest::Test
       inject_drag(x: 25, y: 8)
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_mouse_drag")
+      assert_normalized_snapshots("after_mouse_drag")
     end
   end
 
@@ -135,7 +135,7 @@ class TestAppAllEvents < Minitest::Test
       inject_event(RatatuiRuby::Event::Resize.new(width: 100, height: 24))
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_horizontal_resize")
+      assert_normalized_snapshots("after_horizontal_resize")
     end
   end
 
@@ -144,7 +144,7 @@ class TestAppAllEvents < Minitest::Test
       inject_event(RatatuiRuby::Event::Resize.new(width: 80, height: 30))
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_vertical_resize")
+      assert_normalized_snapshots("after_vertical_resize")
     end
   end
 
@@ -153,11 +153,11 @@ class TestAppAllEvents < Minitest::Test
       inject_right_click(x: 50, y: 10)
       inject_key(:q)
       @app.run
-      assert_normalized_snapshot("after_right_click")
+      assert_normalized_snapshots("after_right_click")
     end
   end
 
-  private def assert_normalized_snapshot(snapshot_name)
+  private def assert_normalized_snapshots(snapshot_name)
     normalizer = proc do |lines|
       lines.map do |line|
         line.gsub(TIME_PATTERN, "XX:XX:XX")
@@ -165,7 +165,6 @@ class TestAppAllEvents < Minitest::Test
       end
     end
 
-    assert_snapshot(snapshot_name, &normalizer)
-    assert_rich_snapshot(snapshot_name, &normalizer)
+    assert_snapshots(snapshot_name, &normalizer)
   end
 end

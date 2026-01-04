@@ -103,14 +103,16 @@ See [RatatuiRuby::TestHelper::EventInjection](../lib/ratatui_ruby/test_helper/ev
 
 Snapshots let you verify complex layouts without manually asserting every line.
 
-Use `assert_snapshot` to compare the current screen against a stored reference file.
+Use `assert_snapshots` to compare the current screen against stored reference files.
 
 ```ruby
 with_test_terminal do
   MyApp.new.run
-  assert_snapshot("dashboard_view")
+  assert_snapshots("dashboard_view")
 end
 ```
+
+This generates both `.txt` (plain text) and `.ansi` (styled) snapshot files. The `.ansi` files contain ANSI escape codes—`cat` them in a terminal to see exactly what the screen looked like. For a visual tour of your test suite, try `cat **/*.ansi` in any shell that supports globbing.
 
 ### Handling Non-Determinism
 

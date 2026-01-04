@@ -23,7 +23,7 @@ class TestBoxDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestBoxDemo < Minitest::Test
       inject_keys(:up, :q)
       @app.run
 
-      assert_snapshot("after_color_cycle")
+      assert_snapshots("after_color_cycle")
       assert_rich_snapshot("after_color_cycle")
     end
   end
@@ -43,7 +43,7 @@ class TestBoxDemo < Minitest::Test
       inject_keys(" ", :q)
       @app.run
 
-      assert_snapshot("after_border_cycle")
+      assert_snapshots("after_border_cycle")
       assert_rich_snapshot("after_border_cycle")
     end
   end
@@ -53,7 +53,7 @@ class TestBoxDemo < Minitest::Test
       inject_keys(:enter, :q)
       @app.run
 
-      assert_snapshot("after_title_align_cycle")
+      assert_snapshots("after_title_align_cycle")
       assert_rich_snapshot("after_title_align_cycle")
     end
   end
@@ -63,7 +63,7 @@ class TestBoxDemo < Minitest::Test
       inject_keys(:s, :q)
       @app.run
 
-      assert_snapshot("after_content_style_cycle")
+      assert_snapshots("after_content_style_cycle")
       assert_rich_snapshot("after_content_style_cycle")
     end
   end
@@ -73,7 +73,7 @@ class TestBoxDemo < Minitest::Test
       inject_keys(:t, :q)
       @app.run
 
-      assert_snapshot("after_title_style_cycle")
+      assert_snapshots("after_title_style_cycle")
       assert_rich_snapshot("after_title_style_cycle")
     end
   end
@@ -83,7 +83,7 @@ class TestBoxDemo < Minitest::Test
       inject_keys(:b, :q)
       @app.run
 
-      assert_snapshot("after_border_style_cycle")
+      assert_snapshots("after_border_style_cycle")
       assert_rich_snapshot("after_border_style_cycle")
     end
   end

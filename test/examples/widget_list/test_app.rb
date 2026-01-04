@@ -23,7 +23,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -33,7 +33,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:down, :q)
       @app.run
 
-      assert_snapshot("after_navigate_down")
+      assert_snapshots("after_navigate_down")
       assert_rich_snapshot("after_navigate_down")
     end
   end
@@ -43,7 +43,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:up, :q)
       @app.run
 
-      assert_snapshot("after_navigate_up_wrap")
+      assert_snapshots("after_navigate_up_wrap")
       assert_rich_snapshot("after_navigate_up_wrap")
     end
   end
@@ -53,7 +53,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:x, :q)
       @app.run
 
-      assert_snapshot("after_toggle_selection")
+      assert_snapshots("after_toggle_selection")
       assert_rich_snapshot("after_toggle_selection")
     end
   end
@@ -63,7 +63,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:i, :q)
       @app.run
 
-      assert_snapshot("after_item_set_cycle")
+      assert_snapshots("after_item_set_cycle")
       assert_rich_snapshot("after_item_set_cycle")
     end
   end
@@ -73,7 +73,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:h, :q)
       @app.run
 
-      assert_snapshot("after_highlight_style_cycle")
+      assert_snapshots("after_highlight_style_cycle")
       assert_rich_snapshot("after_highlight_style_cycle")
     end
   end
@@ -83,7 +83,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:x, :y, :q)
       @app.run
 
-      assert_snapshot("after_highlight_symbol_cycle")
+      assert_snapshots("after_highlight_symbol_cycle")
       assert_rich_snapshot("after_highlight_symbol_cycle")
     end
   end
@@ -93,7 +93,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:d, :q)
       @app.run
 
-      assert_snapshot("after_direction_cycle")
+      assert_snapshots("after_direction_cycle")
       assert_rich_snapshot("after_direction_cycle")
     end
   end
@@ -103,7 +103,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:s, :q)
       @app.run
 
-      assert_snapshot("after_spacing_cycle")
+      assert_snapshots("after_spacing_cycle")
       assert_rich_snapshot("after_spacing_cycle")
     end
   end
@@ -113,7 +113,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:b, :q)
       @app.run
 
-      assert_snapshot("after_base_style_cycle")
+      assert_snapshots("after_base_style_cycle")
       assert_rich_snapshot("after_base_style_cycle")
     end
   end
@@ -123,7 +123,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:r, :q)
       @app.run
 
-      assert_snapshot("after_repeat_symbol_cycle")
+      assert_snapshots("after_repeat_symbol_cycle")
       assert_rich_snapshot("after_repeat_symbol_cycle")
     end
   end
@@ -133,7 +133,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:p, :q)
       @app.run
 
-      assert_snapshot("after_scroll_padding_cycle")
+      assert_snapshots("after_scroll_padding_cycle")
       assert_rich_snapshot("after_scroll_padding_cycle")
     end
   end
@@ -143,7 +143,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:o, :q)
       @app.run
 
-      assert_snapshot("after_offset_mode_cycle")
+      assert_snapshots("after_offset_mode_cycle")
       assert_rich_snapshot("after_offset_mode_cycle")
     end
   end
@@ -153,7 +153,7 @@ class TestWidgetListDemo < Minitest::Test
       inject_keys(:down, :h, :down, :y, :up, :b, :q)
       @app.run
 
-      assert_snapshot("after_multiple_interactions")
+      assert_snapshots("after_multiple_interactions")
       assert_rich_snapshot("after_multiple_interactions")
     end
   end

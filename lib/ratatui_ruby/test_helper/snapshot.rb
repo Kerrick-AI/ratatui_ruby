@@ -15,9 +15,10 @@ module RatatuiRuby
     # Verifying every character of a TUI screen by hand is tedious. Snapshots let you
     # capture the screen once and compare against it in future runs.
     #
-    # This mixin provides <tt>assert_snapshot</tt> for plain text and
-    # <tt>assert_rich_snapshot</tt> for styled ANSI output. Both auto-create
-    # snapshot files on first run.
+    # This mixin provides <tt>assert_plain_snapshot</tt> for plain text,
+    # <tt>assert_rich_snapshot</tt> for styled ANSI output, and
+    # <tt>assert_snapshots</tt> (plural) for both. All auto-create snapshot
+    # files on first run.
     #
     # Use it to verify complex layouts, styles, and interactions without manual assertions.
     #
@@ -62,45 +63,45 @@ module RatatuiRuby
     #
     # Mask dynamic content (timestamps, IDs) with a normalization block:
     #
-    #   assert_snapshot("dashboard") do |lines|
+    #   assert_snapshots("dashboard") do |lines|
     #     lines.map { |l| l.gsub(/\d{4}-\d{2}-\d{2}/, "YYYY-MM-DD") }
     #   end
     #
     module Snapshot
       ##
-      # Asserts that the current screen content matches a stored snapshot.
+      # Asserts that the current screen content matches a stored plain text snapshot.
       #
-      # This method simplifies snapshot testing by automatically resolving the snapshot path
-      # relative to the test file calling this method. It assumes a "snapshots" directory
-      # exists in the same directory as the test file.
+      # Plain text snapshots capture layout but miss styling bugs: wrong colors, missing bold,
+      # invisible text on a matching background. *Prefer <tt>assert_snapshots</tt>* (plural) to catch
+      # styling regressions.
       #
-      # TUIs communicate meaning through colors and styles. Plain text snapshots capture layout
-      # but miss styling bugs: wrong colors, missing bold, invisible text on a matching background.
-      # Use +assert_rich_snapshot+ to catch these regressions. Reserve this method for cases where
-      # you only care about text content, not appearance.
+      # Plain text snapshots are human-readable when viewed in any editor or diff tool. They
+      # pair well with rich snapshots for documentation. Use <tt>assert_snapshots</tt> to generate both.
       #
-      # *Prefer +assert_rich_snapshot+* unless you have a specific reason to ignore styling.
-      #
-      #   # In test/test_login.rb
-      #   assert_snapshot("login_screen")
-      #   # Look for: test/snapshots/login_screen.txt
+      #   assert_plain_snapshot("login_screen")
+      #   # Compares against: test/snapshots/login_screen.txt
       #
       #   # With normalization block
-      #   assert_snapshot("clock") do |actual|
+      #   assert_plain_snapshot("clock") do |actual|
       #     actual.map { |l| l.gsub(/\d{2}:\d{2}/, "XX:XX") }
       #   end
       #
       # [name] String name of the snapshot (without extension).
       # [msg] String optional failure message.
-      def assert_snapshot(name, msg = nil, &)
+      def assert_plain_snapshot(name, msg = nil, snapshot_dir: nil, &)
         # Get the path of the test file calling this method
-        caller_path = caller_locations(1, 1).first.path
-        snapshot_dir = File.join(File.dirname(caller_path), "snapshots")
+        snapshot_dir ||= File.join(File.dirname(caller_locations(1, 1).first.path), "snapshots")
         snapshot_path = File.join(snapshot_dir, "#{name}.txt")
 
         assert_screen_matches(snapshot_path, msg, &)
       end
-      alias assert_plain_snapshot assert_snapshot
+
+      ##
+      # @deprecated Use {#assert_plain_snapshot} instead.
+      def assert_snapshot(name, msg = nil, &)
+        warn "assert_snapshot is deprecated; use assert_plain_snapshot instead", uplevel: 1
+        assert_plain_snapshot(name, msg, &)
+      end
 
       ##
       # Asserts that the current screen content matches the expected content.
@@ -194,12 +195,17 @@ module RatatuiRuby
       end
 
       ##
-      # Asserts that the current screen content (including colors!) matches a stored ANSI snapshot.
+      # Asserts that the current screen content (including colors and styles) matches a stored ANSI snapshot.
       #
-      # Generates/Compares against a file with <tt>.ansi</tt> extension.
-      # You can <tt>cat</tt> this file to see exactly what the screen looked like.
+      # TUIs communicate meaning through colors and styles. Rich snapshots capture everything:
+      # wrong colors, missing bold, invisible text on a matching background. *Prefer <tt>assert_snapshots</tt>*
+      # (plural) to also generate human-readable plain text files for documentation.
+      #
+      # The <tt>.ansi</tt> snapshot files contain ANSI escape codes. You can <tt>cat</tt> them in a terminal
+      # to see exactly what the screen looked like.
       #
       #   assert_rich_snapshot("login_screen")
+      #   # Compares against: test/snapshots/login_screen.ansi
       #
       #   # With normalization
       #   assert_rich_snapshot("log_view") do |lines|
@@ -208,9 +214,8 @@ module RatatuiRuby
       #
       # [name] String snapshot name.
       # [msg] String optional failure message.
-      def assert_rich_snapshot(name, msg = nil)
-        caller_path = caller_locations(1, 1).first.path
-        snapshot_dir = File.join(File.dirname(caller_path), "snapshots")
+      def assert_rich_snapshot(name, msg = nil, snapshot_dir: nil)
+        snapshot_dir ||= File.join(File.dirname(caller_locations(1, 1).first.path), "snapshots")
         snapshot_path = File.join(snapshot_dir, "#{name}.ansi")
 
         actual_content = _render_buffer_with_ansi
@@ -265,18 +270,27 @@ module RatatuiRuby
       ##
       # Asserts both plain text and rich (ANSI-styled) snapshots match.
       #
-      # A convenience method that calls both +assert_snapshot+ and +assert_rich_snapshot+
-      # with the same name. Use this when you want to generate both +.txt+ and +.ansi+
-      # snapshot files for documentation and display purposes.
+      # This is the recommended snapshot assertion. It calls both <tt>assert_plain_snapshot</tt> and
+      # <tt>assert_rich_snapshot</tt> with the same name, generating <tt>.txt</tt> and <tt>.ansi</tt> files.
+      #
+      # Rich snapshots catch styling bugs that plain text misses. Plain text snapshots are
+      # human-readable in any editor or diff tool, making them valuable for documentation and
+      # code review. Together, they provide comprehensive coverage and discoverability.
       #
       #   assert_snapshots("login_screen")
       #   # Creates/compares: snapshots/login_screen.txt AND snapshots/login_screen.ansi
       #
+      #   # With normalization (masks dynamic content like timestamps)
+      #   assert_snapshots("dashboard") do |lines|
+      #     lines.map { |l| l.gsub(/\d{2}:\d{2}:\d{2}/, "HH:MM:SS") }
+      #   end
+      #
       # [name] String snapshot name (without extension).
       # [msg] String optional failure message.
-      def assert_snapshots(name, msg = nil)
-        assert_snapshot(name, msg)
-        assert_rich_snapshot(name, msg)
+      def assert_snapshots(name, msg = nil, &)
+        snapshot_dir = File.join(File.dirname(caller_locations(1, 1).first.path), "snapshots")
+        assert_plain_snapshot(name, msg, snapshot_dir:, &)
+        assert_rich_snapshot(name, msg, snapshot_dir:, &)
       end
 
       ##

@@ -22,7 +22,7 @@ class TestWidgetOverlayDemo < Minitest::Test
     with_test_terminal do
       inject_key(:q)
       @app.run
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
     end
   end
 
@@ -34,7 +34,7 @@ class TestWidgetOverlayDemo < Minitest::Test
 
       @app.run
 
-      assert_snapshot("modal_hidden")
+      assert_snapshots("modal_hidden")
     end
   end
 end

@@ -22,7 +22,7 @@ class TestWidgetBlockDemo < Minitest::Test
     with_test_terminal do
       inject_key(:q)
       @app.run
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
     end
   end
 
@@ -34,7 +34,7 @@ class TestWidgetBlockDemo < Minitest::Test
       inject_key("p") # Cycle padding
       inject_key(:q)
       @app.run
-      assert_snapshot("after_cycling")
+      assert_snapshots("after_cycling")
     end
   end
 end

@@ -23,7 +23,7 @@ class TestQuickstartLifecycle < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("render")
+      assert_snapshots("render")
       assert_rich_snapshot("render")
     end
   end

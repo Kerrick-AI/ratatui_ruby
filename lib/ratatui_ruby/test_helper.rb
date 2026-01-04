@@ -41,7 +41,7 @@ module RatatuiRuby
   #     def test_initial_render
   #       with_test_terminal(80, 24) do
   #         MyApp.new.run_once
-  #         assert_snapshot("initial")
+  #         assert_snapshots("initial")
   #       end
   #     end
   #

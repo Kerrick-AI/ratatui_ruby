@@ -110,7 +110,7 @@ class TestWidgetRichTextApp < Minitest::Test
       inject_key(:q)
       WidgetRichText.new.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end

@@ -22,7 +22,7 @@ class TestWidgetScrollText < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -32,7 +32,7 @@ class TestWidgetScrollText < Minitest::Test
       inject_keys(:down, :q)
       @app.run
 
-      assert_snapshot("after_scroll_down")
+      assert_snapshots("after_scroll_down")
       assert_rich_snapshot("after_scroll_down")
     end
   end
@@ -42,7 +42,7 @@ class TestWidgetScrollText < Minitest::Test
       inject_keys(:right, :q)
       @app.run
 
-      assert_snapshot("after_scroll_right")
+      assert_snapshots("after_scroll_right")
       assert_rich_snapshot("after_scroll_right")
     end
   end
@@ -52,7 +52,7 @@ class TestWidgetScrollText < Minitest::Test
       inject_keys(:left, :q)
       @app.run
 
-      assert_snapshot("after_scroll_left_edge")
+      assert_snapshots("after_scroll_left_edge")
       assert_rich_snapshot("after_scroll_left_edge")
     end
   end
@@ -62,7 +62,7 @@ class TestWidgetScrollText < Minitest::Test
       inject_keys(:up, :q)
       @app.run
 
-      assert_snapshot("after_scroll_up_top")
+      assert_snapshots("after_scroll_up_top")
       assert_rich_snapshot("after_scroll_up_top")
     end
   end
@@ -72,7 +72,7 @@ class TestWidgetScrollText < Minitest::Test
       inject_keys(:down, :down, :right, :right, :right, :q)
       @app.run
 
-      assert_snapshot("after_multiple_scrolls")
+      assert_snapshots("after_multiple_scrolls")
       assert_rich_snapshot("after_multiple_scrolls")
     end
   end

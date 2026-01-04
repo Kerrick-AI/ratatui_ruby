@@ -29,7 +29,7 @@ class TestWidgetTabsDemo < Minitest::Test
       inject_key(:q)
       @app.run
 
-      assert_snapshot("initial_render")
+      assert_snapshots("initial_render")
       assert_rich_snapshot("initial_render")
     end
   end
@@ -39,7 +39,7 @@ class TestWidgetTabsDemo < Minitest::Test
       inject_keys(:right, :right, :left, :q)
       @app.run
 
-      assert_snapshot("after_navigation")
+      assert_snapshots("after_navigation")
       assert_rich_snapshot("after_navigation")
     end
   end
@@ -49,7 +49,7 @@ class TestWidgetTabsDemo < Minitest::Test
       inject_keys(:d, :q)
       @app.run
 
-      assert_snapshot("after_divider_switch")
+      assert_snapshots("after_divider_switch")
       assert_rich_snapshot("after_divider_switch")
     end
   end
@@ -59,7 +59,7 @@ class TestWidgetTabsDemo < Minitest::Test
       inject_keys(:s, :q)
       @app.run
 
-      assert_snapshot("after_style_switch")
+      assert_snapshots("after_style_switch")
       assert_rich_snapshot("after_style_switch")
     end
   end
@@ -69,7 +69,7 @@ class TestWidgetTabsDemo < Minitest::Test
       inject_keys(:b, :q)
       @app.run
 
-      assert_snapshot("after_base_style_switch")
+      assert_snapshots("after_base_style_switch")
       assert_rich_snapshot("after_base_style_switch")
     end
   end
@@ -79,7 +79,7 @@ class TestWidgetTabsDemo < Minitest::Test
       inject_keys(:l, :l, :k, :k, :k, :q)
       @app.run
 
-      assert_snapshot("after_padding_changes")
+      assert_snapshots("after_padding_changes")
       assert_rich_snapshot("after_padding_changes")
     end
   end
