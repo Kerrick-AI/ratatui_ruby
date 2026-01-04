@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -33,5 +35,79 @@ class TestGauge < Minitest::Test
 
     g_false = RatatuiRuby::Widgets::Gauge.new(ratio: 0.5, use_unicode: false)
     assert_equal false, g_false.use_unicode
+  end
+
+  def test_style_applies_to_gauge
+    with_test_terminal(20, 1) do
+      g = RatatuiRuby::Widgets::Gauge.new(
+        ratio: 0.5,
+        style: RatatuiRuby::Style::Style.new(fg: :magenta)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(g, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Magenta foreground = ANSI 35
+      assert_includes ansi_output, "\e[35m", "Gauge style should apply magenta foreground"
+    end
+  end
+
+  def test_gauge_style_applies_to_filled_area
+    with_test_terminal(20, 1) do
+      g = RatatuiRuby::Widgets::Gauge.new(
+        ratio: 0.5,
+        gauge_style: RatatuiRuby::Style::Style.new(bg: :green)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(g, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Green background = ANSI 42
+      assert_includes ansi_output, "\e[42m", "Gauge gauge_style should apply green background"
+    end
+  end
+end
+
+class TestLineGauge < Minitest::Test
+  include RatatuiRuby::TestHelper
+
+  def test_line_gauge_style_applies
+    with_test_terminal(20, 1) do
+      lg = RatatuiRuby::Widgets::LineGauge.new(
+        ratio: 0.5,
+        style: RatatuiRuby::Style::Style.new(fg: :cyan)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(lg, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Cyan foreground = ANSI 36
+      assert_includes ansi_output, "\e[36m", "LineGauge style should apply cyan foreground"
+    end
+  end
+
+  def test_line_gauge_filled_style_applies
+    with_test_terminal(20, 1) do
+      lg = RatatuiRuby::Widgets::LineGauge.new(
+        ratio: 0.5,
+        filled_style: RatatuiRuby::Style::Style.new(fg: :green)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(lg, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Green foreground = ANSI 32
+      assert_includes ansi_output, "\e[32m", "LineGauge filled_style should apply green foreground"
+    end
+  end
+
+  def test_line_gauge_unfilled_style_applies
+    with_test_terminal(20, 1) do
+      lg = RatatuiRuby::Widgets::LineGauge.new(
+        ratio: 0.5,
+        unfilled_style: RatatuiRuby::Style::Style.new(fg: :red)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(lg, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Red foreground = ANSI 31
+      assert_includes ansi_output, "\e[31m", "LineGauge unfilled_style should apply red foreground"
+    end
   end
 end

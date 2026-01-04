@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -78,6 +80,38 @@ module RatatuiRuby
         RatatuiRuby.draw { |f| f.render_widget(s, f.area) }
         # Custom symbols should be rendered
         assert_equal "<####---->", buffer_content[0]
+      end
+    end
+
+    def test_thumb_style_applies_to_thumb
+      with_test_terminal(10, 1) do
+        s = Widgets::Scrollbar.new(
+          content_length: 10,
+          position: 0,
+          orientation: :horizontal,
+          thumb_style: Style::Style.new(fg: :magenta)
+        )
+        RatatuiRuby.draw { |f| f.render_widget(s, f.area) }
+
+        ansi_output = render_rich_buffer
+        # Magenta foreground = ANSI 35
+        assert_includes ansi_output, "\e[35m", "Scrollbar thumb_style should apply magenta foreground"
+      end
+    end
+
+    def test_track_style_applies_to_track
+      with_test_terminal(10, 1) do
+        s = Widgets::Scrollbar.new(
+          content_length: 10,
+          position: 0,
+          orientation: :horizontal,
+          track_style: Style::Style.new(fg: :yellow)
+        )
+        RatatuiRuby.draw { |f| f.render_widget(s, f.area) }
+
+        ansi_output = render_rich_buffer
+        # Yellow foreground = ANSI 33
+        assert_includes ansi_output, "\e[33m", "Scrollbar track_style should apply yellow foreground"
       end
     end
   end

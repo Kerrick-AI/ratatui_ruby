@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -81,6 +83,35 @@ class TestSparkline < Minitest::Test
       # Non-absent values should render as sparkline bars
       assert_includes(content, "-", "Expected dashes for absent values")
       assert_equal(5, content.length, "Expected content to span the full width")
+    end
+  end
+
+  def test_style_applies_to_sparkline
+    with_test_terminal(10, 3) do
+      spark = RatatuiRuby::Widgets::Sparkline.new(
+        data: [1, 2, 3, 4],
+        style: RatatuiRuby::Style::Style.new(fg: :cyan)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Cyan foreground = ANSI 36
+      assert_includes ansi_output, "\e[36m", "Sparkline style should apply cyan foreground"
+    end
+  end
+
+  def test_absent_value_style_applies_to_gaps
+    with_test_terminal(5, 1) do
+      spark = RatatuiRuby::Widgets::Sparkline.new(
+        data: [1, nil, 3],
+        absent_value_symbol: "-",
+        absent_value_style: RatatuiRuby::Style::Style.new(fg: :red)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Red foreground = ANSI 31
+      assert_includes ansi_output, "\e[31m", "Sparkline absent_value_style should apply red foreground"
     end
   end
 end

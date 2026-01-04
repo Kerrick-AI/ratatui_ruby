@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -311,6 +313,49 @@ class TestBlock < Minitest::Test
       assert_equal "┌My App─────────────────emate┐", buffer_content[0]
       refute_includes buffer_content[0], "#<data"
       refute_includes buffer_content[0], "RatatuiRuby"
+    end
+  end
+
+  def test_style_applies_to_block_area
+    with_test_terminal(20, 3) do
+      b = RatatuiRuby::Widgets::Block.new(
+        borders: [:all],
+        style: RatatuiRuby::Style::Style.new(fg: :blue)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(b, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Blue foreground = ANSI 34
+      assert_includes ansi_output, "\e[34m", "Block style should apply blue foreground"
+    end
+  end
+
+  def test_title_style_applies_to_title
+    with_test_terminal(20, 3) do
+      b = RatatuiRuby::Widgets::Block.new(
+        borders: [:all],
+        title: "Title",
+        title_style: RatatuiRuby::Style::Style.new(fg: :red)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(b, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Red foreground = ANSI 31
+      assert_includes ansi_output, "\e[31m", "Block title_style should apply red foreground"
+    end
+  end
+
+  def test_border_style_applies_to_border
+    with_test_terminal(20, 3) do
+      b = RatatuiRuby::Widgets::Block.new(
+        borders: [:all],
+        border_style: RatatuiRuby::Style::Style.new(fg: :green)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(b, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Green foreground = ANSI 32
+      assert_includes ansi_output, "\e[32m", "Block border_style should apply green foreground"
     end
   end
 end

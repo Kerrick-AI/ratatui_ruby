@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -177,6 +179,35 @@ class TestList < Minitest::Test
       assert_equal "Item 5              ", buffer_content[0]
       assert_equal "Item 6              ", buffer_content[1]
       assert_equal "Item 7              ", buffer_content[2]
+    end
+  end
+
+  def test_style_applies_to_list_area
+    with_test_terminal(20, 3) do
+      list = RatatuiRuby::Widgets::List.new(
+        items: ["Item 1", "Item 2"],
+        style: RatatuiRuby::Style::Style.new(fg: :cyan)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(list, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Cyan foreground = ANSI 36
+      assert_includes ansi_output, "\e[36m", "List style should apply cyan foreground"
+    end
+  end
+
+  def test_highlight_style_applies_to_selected_item
+    with_test_terminal(20, 3) do
+      list = RatatuiRuby::Widgets::List.new(
+        items: ["Item 1", "Item 2"],
+        selected_index: 0,
+        highlight_style: RatatuiRuby::Style::Style.new(bg: :yellow)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(list, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Yellow background = ANSI 43
+      assert_includes ansi_output, "\e[43m", "List highlight_style should apply yellow background"
     end
   end
 end

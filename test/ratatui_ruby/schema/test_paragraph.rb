@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -92,5 +94,20 @@ class TestParagraph < Minitest::Test
     p_emoji = RatatuiRuby::Widgets::Paragraph.new(text: emoji)
     # The string length is large (multiple codepoints). Display width is small.
     assert p_emoji.line_width < emoji.length, "Display width should be smaller than byte/char length for ZWJ emoji"
+  end
+
+  def test_style_applies_foreground_and_background
+    with_test_terminal(20, 3) do
+      p = RatatuiRuby::Widgets::Paragraph.new(
+        text: "Styled",
+        style: RatatuiRuby::Style::Style.new(fg: :green, bg: :blue)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(p, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Green foreground = ANSI 32, Blue background = ANSI 44
+      assert_includes ansi_output, "\e[32m", "Paragraph style should apply green foreground"
+      assert_includes ansi_output, "\e[44m", "Paragraph style should apply blue background"
+    end
   end
 end
