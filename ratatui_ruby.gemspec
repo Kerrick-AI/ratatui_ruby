@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["bug_tracker_uri"] = "https://todo.sr.ht/~kerrick/ratatui_ruby"
-  spec.metadata["changelog_uri"] = "https://git.sr.ht/~kerrick/ratatui_ruby/tree/main/item/CHANGELOG.md"
+  spec.metadata["changelog_uri"] = "https://git.sr.ht/~kerrick/ratatui_ruby/tree/stable/item/CHANGELOG.md"
   spec.metadata["mailing_list_uri"] = "https://lists.sr.ht/~kerrick/ratatui_ruby-discuss"
   spec.metadata["source_code_uri"] = "https://git.sr.ht/~kerrick/ratatui_ruby"
   spec.metadata["documentation_uri"] = "https://git.sr.ht/~kerrick/ratatui_ruby/tree/HEAD/doc/index.md"

@@ -12,7 +12,7 @@
 # ======================================================================
 #
 # SYNOPSIS
-#     bin/hbs [-n|--no-wait] [-b|--builds N] [-y|--yes]
+#     bin/hbs [-N|--no-wait] [-b|--builds N] [-y|--yes] [-S|--no-say]
 #
 # DESCRIPTION
 #     Check SourceHut builds for the current HEAD commit and wait for
@@ -26,10 +26,11 @@
 #     This makes it reliable for chaining: bin/hbs && rake release
 #
 # OPTIONS
-#     -n, --no-wait      Exit 1 immediately if no builds exist for HEAD.
+#     -N, --no-wait      Exit 1 immediately if no builds exist for HEAD.
 #     -b, --builds N     Number of builds to watch (default: count of
 #                        .yml files in .builds/ directory).
 #     -y, --yes          Auto-confirm all prompts (non-interactive).
+#     -S, --no-say       Disable text-to-speech announcements.
 #
 # EXIT STATUS
 #     0                  All builds for HEAD passed
@@ -43,7 +44,7 @@
 #     bin/hbs -y
 #
 #     Quick check without waiting:
-#     bin/hbs -n
+#     bin/hbs -N
 #
 # DEPENDENCIES
 #     hut                SourceHut CLI (https://sr.ht/~xenrox/hut/)
@@ -64,19 +65,19 @@ Commit = Data.define(:short_sha) do
   end
 
   def self.origin_head
-    sha = `git rev-parse --short origin/HEAD 2>/dev/null`.strip
+    sha = `git rev-parse --short origin/trunk 2>/dev/null`.strip
     return nil if sha.empty?
 
     new(short_sha: sha)
   end
 
   def pushed?
-    system("git", "merge-base", "--is-ancestor", short_sha, "origin/HEAD",
+    system("git", "merge-base", "--is-ancestor", short_sha, "origin/trunk",
       out: File::NULL, err: File::NULL)
   end
 
   def commits_ahead
-    `git rev-list --count origin/HEAD..HEAD 2>/dev/null`.strip.to_i
+    `git rev-list --count origin/trunk..HEAD 2>/dev/null`.strip.to_i
   end
 end
 
@@ -153,7 +154,10 @@ BuildSet = Data.define(:builds) do
   end
 
   def show_all
-    builds.each(&:show)
+    builds.each_with_index do |build, idx|
+      puts "#" * 80 if idx.positive?
+      build.show
+    end
   end
 
   def refresh
@@ -170,10 +174,73 @@ class BuildWatch
   WAIT_INTERVAL = 5
   MAX_WAIT_ATTEMPTS = 6
 
-  def initialize(wait_for_builds: true, build_count: 4, auto_yes: false)
+  def initialize(wait_for_builds: true, build_count: 4, auto_yes: false, no_say: false)
     @wait_for_builds = wait_for_builds
     @build_count = build_count
     @auto_yes = auto_yes
+    @no_say = no_say
+  end
+
+  private def box(*lines, style: :info)
+    width = 78
+    inner_width = width - 4 # "│ " + content + " │"
+
+    color = case style
+            when :success then "\e[32m"
+            when :error then "\e[31m"
+            else "\e[36m"
+    end
+    reset = "\e[0m"
+
+    top_border = "#{color}╔#{'═' * (width - 2)}╗#{reset}"
+    bottom_border = "#{color}╚#{'═' * (width - 2)}╝#{reset}"
+
+    puts top_border
+    lines.each do |line|
+      wrap_text(line, inner_width).each do |wrapped|
+        puts "#{color}║ #{wrapped.ljust(inner_width)} ║#{reset}"
+      end
+    end
+    puts bottom_border
+  end
+
+  private def result_box(message, style:)
+    width = 78
+    inner_width = width - 4
+    symbol = (style == :success) ? "✓" : "✗"
+    flanks = "#{symbol} #{symbol} #{symbol}"
+
+    # Calculate padding: inner_width - 2*flanks - message - spaces around message
+    available = inner_width - (flanks.length * 2) - message.length
+    left_pad = available / 2
+    right_pad = available - left_pad
+
+    centered = "#{flanks}#{' ' * left_pad}#{message}#{' ' * right_pad}#{flanks}"
+    box(centered, style:)
+  end
+
+  private def wrap_text(text, width)
+    return [text] if text.length <= width
+
+    words = text.split
+    lines = []
+    current = ""
+    words.each do |word|
+      if current.empty?
+        current = word
+      elsif (current.length + 1 + word.length) <= width
+        current += " #{word}"
+      else
+        lines << current
+        current = word
+      end
+    end
+    lines << current unless current.empty?
+    lines
+  end
+
+  private def separator
+    puts "\e[36m#{'─' * 80}\e[0m"
   end
 
   def run
@@ -186,20 +253,17 @@ class BuildWatch
       return handle_unpushed(commit, origin)
     end
 
-    puts "Looking for builds for commit #{commit.short_sha}..."
+    box("Looking for builds for commit #{commit.short_sha}...")
 
     build_set = find_builds(commit)
     if build_set.empty?
       puts
-      puts "=" * 60
       say("No builds found")
-      puts "✗✗✗ NO BUILDS FOUND ✗✗✗"
-      puts "Commit: #{commit.short_sha}"
-      puts "=" * 60
+      box("✗✗✗ NO BUILDS FOUND ✗✗✗", "Commit: #{commit.short_sha}", style: :error)
       exit 1
     end
 
-    puts "Found builds: #{build_set.ids.join(', ')}"
+    box("Found builds: #{build_set.ids.join(', ')}")
     watch(build_set) if build_set.any_running?
     report(build_set.refresh)
   end
@@ -234,17 +298,19 @@ class BuildWatch
     ahead = commit.commits_ahead
     origin_sha = origin&.short_sha || "unknown"
 
-    puts
-    puts "Your branch is ahead of 'origin' by #{ahead} commit#{'s' if ahead != 1}."
-    puts "  Local HEAD:  #{commit.short_sha}"
-    puts "  Origin HEAD: #{origin_sha}"
-    puts
+    box(
+      "Your branch is ahead of 'origin' by #{ahead} commit#{'s' if ahead != 1}.",
+      "  Local HEAD:  #{commit.short_sha}",
+      "  Origin HEAD: #{origin_sha}"
+    )
 
     unless @auto_yes
       print "Watch latest SourceHut builds anyway? [Y/n] "
       reply = $stdin.gets&.strip || ""
       if reply.downcase.start_with?("n")
-        puts "Exiting (builds not verified)."
+        puts
+        say("Exiting")
+        box("✗✗✗ EXITING (BUILDS NOT VERIFIED) ✗✗✗", style: :error)
         exit 1
       end
     end
@@ -252,49 +318,45 @@ class BuildWatch
     build_set = BuildSet.latest(@build_count)
     if build_set.empty?
       puts
-      puts "=" * 60
       say("No builds found")
-      puts "✗✗✗ NO BUILDS ON SOURCEHUT ✗✗✗"
-      puts "=" * 60
+      box("✗✗✗ NO BUILDS ON SOURCEHUT ✗✗✗", style: :error)
       exit 1
     end
 
-    puts "Latest builds: #{build_set.ids.join(', ')}"
+    box("Latest builds: #{build_set.ids.join(', ')}")
     watch(build_set) if build_set.any_running?
 
     final_set = build_set.refresh
-    puts "---"
+    separator
     final_set.show_all
     puts
-    puts "=" * 60
     if final_set.any_failed?
       say("Builds have Failed")
-      puts "✗✗✗ BUILDS FAILED ✗✗✗"
+      result_box("BUILDS FAILED", style: :error)
     else
       say("Builds have Passed")
-      puts "✓✓✓ BUILDS PASSED ✓✓✓"
+      result_box("BUILDS PASSED", style: :success)
     end
 
     # Recheck if HEAD is now pushed (user may have pushed while watching)
     current_head = Commit.head
     if current_head.pushed?
-      puts "HEAD #{current_head.short_sha} is now pushed. Re-run to verify."
+      box("HEAD #{current_head.short_sha} is now pushed. Re-run to verify.")
     else
-      puts "HEAD #{current_head.short_sha} still not pushed."
+      box("HEAD #{current_head.short_sha} still not pushed.")
     end
-    puts "=" * 60
     exit 1
   end
 
   private def watch(build_set)
     say("Watching Builds")
-    puts "---"
+    separator
     build_set.show_all
 
     current = build_set
     while current.any_running?
       sleep POLL_INTERVAL
-      puts "---"
+      separator
       current = current.refresh
       current.show_all
     end
@@ -302,22 +364,24 @@ class BuildWatch
 
   private def report(build_set)
     puts
-    puts "=" * 60
+    separator
+    build_set.show_all
+    puts
 
     if build_set.any_failed?
       say("Builds have Failed")
-      puts "✗✗✗ BUILDS FAILED ✗✗✗"
-      puts "=" * 60
+      result_box("BUILDS FAILED", style: :error)
       exit 1
     else
       say("Builds have Passed")
-      puts "✓✓✓ BUILDS PASSED ✓✓✓"
-      puts "=" * 60
+      result_box("BUILDS PASSED", style: :success)
       exit 0
     end
   end
 
   private def say(message)
+    return if @no_say
+
     system("say", message)
   end
 end
@@ -326,12 +390,12 @@ end
 default_build_count = Dir.glob(".builds/*.yml").size
 default_build_count = 4 if default_build_count.zero?
 
-options = { wait_for_builds: true, build_count: default_build_count, auto_yes: false }
+options = { wait_for_builds: true, build_count: default_build_count, auto_yes: false, no_say: false }
 
 OptionParser.new do |opts|
   opts.banner = "Usage: bin/hbs [OPTIONS]"
 
-  opts.on("-n", "--no-wait", "Don't wait for builds to appear") do
+  opts.on("-N", "--no-wait", "Don't wait for builds to appear") do
     options[:wait_for_builds] = false
   end
 
@@ -341,6 +405,10 @@ OptionParser.new do |opts|
 
   opts.on("-y", "--yes", "Auto-confirm all prompts") do
     options[:auto_yes] = true
+  end
+
+  opts.on("-S", "--no-say", "Disable text-to-speech") do
+    options[:no_say] = true
   end
 
   opts.on("-h", "--help", "Show this help") do

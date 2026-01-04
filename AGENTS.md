@@ -137,8 +137,8 @@ Before considering a task complete and returning control to the user, you **MUST
 
 1.  **Default Rake Task Passes:** Run `bin/agent_rake` (no args). Confirm it passes with ZERO errors **or warnings**.
   - You will save time if you run `bin/agent_rake rubocop:autocorrect` first.
-  - If you think the build is looking for deleted files, it is not. Instead, tell the user and **ask them to stage changes**.
+  - If you think the build is looking for deleted files, it is not. Instead, explain to the user why staging is needed and use the `run_command` tool with `git add -A` so they get a Run button with context.
 2.  **Documentation Updated:** If public APIs or observable behavior changed, update relevant RDoc, rustdoc, `doc/` files, `README.md`, and/or `ratatui_ruby-wiki` files.
 3.  **Changelog Updated:** If public APIs, observable behavior, or gemspec dependencies have changed, update [CHANGELOG.md](CHANGELOG.md)'s **Unreleased** section.
 4.  **Commit Message Suggested:** You **MUST** ensure the final message to the user includes a suggested commit message block. This is NOT optional.
-  - You MUST also remind the user to add an AI attribution footer.
+  - You MUST also check `git log -n1` to see the current standard AI footer ("Generated  with" and "Co-Authored-By") and include it in your suggested message.
