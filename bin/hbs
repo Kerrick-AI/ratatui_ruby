@@ -4,39 +4,62 @@
 
 ####
 # ======================================================================
-# hbs - watch running SourceHut builds and announce completion
+# hbs - watch SourceHut builds for current commit
 # ======================================================================
 #
 # SYNOPSIS
-#     bin/hbs
+#     bin/hbs [-n|--no-wait]
 #
 # DESCRIPTION
-#     Watch currently running SourceHut builds and announce when they
-#     finish.
+#     Check SourceHut builds for the current HEAD commit and wait for
+#     them to complete. Announces result via macOS text-to-speech.
 #
-#     CI builds take time. Waiting and refreshing is tedious. This tool
-#     captures the IDs of all currently running builds, polls every 30
-#     seconds, and uses macOS `say` to announce the result. Hear "Builds
-#     have Passed" or "Builds have Failed" when complete.
+#     The script looks for builds matching the current git HEAD:
+#     - If builds are running, waits for them to complete
+#     - If builds already completed, reports their pass/fail status
+#     - If no builds exist, waits for them to appear (up to 30 seconds)
 #
-#     Useful for hands-free monitoring while working on other things.
+#     This makes it reliable for chaining: bin/hbs && rake release
+#
+# OPTIONS
+#     -n, --no-wait      Don't wait for builds to appear; exit 1
+#                        immediately if none exist for current commit.
 #
 # EXIT STATUS
-#     0                  All watched builds passed
-#     1                  At least one build failed
+#     0                  All builds for HEAD passed
+#     1                  At least one build failed, or no builds found
 #
 # EXAMPLES
-#     Watch builds and get notified:
-#     bin/hbs
+#     Wait for builds and release if they pass:
+#     bin/hbs && bundle exec rake release
 #
 #     Run in background:
 #     bin/hbs &
 #
+#     Quick check without waiting:
+#     bin/hbs -n
+#
 # DEPENDENCIES
 #     hut                SourceHut CLI (https://sr.ht/~emersion/hut/)
+#     git                To get current HEAD commit
 #     say                macOS text-to-speech
 #
 # ======================================================================
+
+# Parse options
+WAIT_FOR_BUILDS=1
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -n|--no-wait)
+      WAIT_FOR_BUILDS=0
+      shift
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      exit 1
+      ;;
+  esac
+done
 
 # Check dependencies
 if ! command -v hut >/dev/null 2>&1; then
@@ -49,35 +72,95 @@ if ! command -v say >/dev/null 2>&1; then
   exit 1
 fi
 
-RUNNING_IDS=$(hut builds list | grep "RUNNING" | awk -F'#| ' '{print $2}')
-
-if [ -z "$RUNNING_IDS" ]; then
-  echo "No running builds found."
-  exit 0
+# Get current HEAD commit (short hash)
+HEAD_COMMIT=$(git rev-parse --short HEAD 2>/dev/null)
+if [ -z "$HEAD_COMMIT" ]; then
+  echo "Error: Not in a git repository or git not available." >&2
+  exit 1
 fi
 
-say "Watching Builds"
-echo "Watching builds: $RUNNING_IDS"
-echo "---"
+echo "Looking for builds for commit $HEAD_COMMIT..."
 
-# Show initial status
-for id in $RUNNING_IDS; do
-  hut builds show "$id"
+# Function to find builds for current commit
+find_builds_for_commit() {
+  # hut builds list output includes commit info; grep for our commit
+  hut builds list 2>/dev/null | grep -B5 "$HEAD_COMMIT" | grep -E "^#[0-9]+" | awk -F'#| ' '{print $2}'
+}
+
+# Function to get build status
+get_build_status() {
+  hut builds show "$1" 2>&1 | head -3 | grep -oE "(RUNNING|SUCCESS|FAILED|PENDING|QUEUED)"
+}
+
+# Wait for builds to appear (they may not start immediately after git push)
+ATTEMPTS=0
+MAX_ATTEMPTS=6
+BUILD_IDS=""
+
+while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+  BUILD_IDS=$(find_builds_for_commit)
+  if [ -n "$BUILD_IDS" ]; then
+    break
+  fi
+  
+  if [ $WAIT_FOR_BUILDS -eq 0 ]; then
+    echo "No builds found for commit $HEAD_COMMIT (--no-wait specified)."
+    exit 1
+  fi
+  
+  ATTEMPTS=$((ATTEMPTS + 1))
+  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+    echo "No builds found for commit $HEAD_COMMIT, waiting... ($ATTEMPTS/$MAX_ATTEMPTS)"
+    sleep 5
+  fi
 done
 
-# Poll until none are running
-while hut builds list | grep -q "RUNNING"; do
-  sleep 30
+if [ -z "$BUILD_IDS" ]; then
+  echo "No builds found for commit $HEAD_COMMIT after ${MAX_ATTEMPTS} attempts."
+  say "No builds found"
+  exit 1
+fi
+
+echo "Found builds: $BUILD_IDS"
+
+# Check if any builds are still running
+any_running() {
+  for id in $BUILD_IDS; do
+    status=$(get_build_status "$id")
+    case "$status" in
+      RUNNING|PENDING|QUEUED)
+        return 0
+        ;;
+    esac
+  done
+  return 1
+}
+
+# If builds are running, watch them
+if any_running; then
+  say "Watching Builds"
   echo "---"
-  for id in $RUNNING_IDS; do
+  
+  # Show initial status
+  for id in $BUILD_IDS; do
     hut builds show "$id"
   done
-done
+  
+  # Poll until none are running
+  while any_running; do
+    sleep 30
+    echo "---"
+    for id in $BUILD_IDS; do
+      hut builds show "$id"
+    done
+  done
+fi
 
-# Check final status of the builds we were watching
+# Check final status of all builds
 FAILED=0
-for id in $RUNNING_IDS; do
-  if hut builds show "$id" 2>&1 | grep -q "FAILED"; then
+for id in $BUILD_IDS; do
+  status=$(get_build_status "$id")
+  if [ "$status" = "FAILED" ]; then
     FAILED=1
     break
   fi
