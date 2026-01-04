@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: CC-BY-SA-4.0
+#++
 
 $LOAD_PATH.unshift File.expand_path("../../lib", __dir__)
 require "ratatui_ruby"

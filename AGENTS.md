@@ -78,6 +78,7 @@ The project follows a standard Gem layout with an `ext/` directory for Rust code
 
 ### Development Environment
 
+- **Scripting Preference:** Simple `sed` or shell one-liners are fine. When a one-off script grows to multiple lines of logic, prefer a temporary rake task or `ruby -e '...'` over a multi-line shell script in a string. Ruby's `File.read`/`File.write`, `Dir.glob`, and regex handle complex transformations more cleanly.
 
 ### Documentation
 

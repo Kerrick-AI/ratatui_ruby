@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -203,10 +205,11 @@ class TestNumericCoercion < Minitest::Test
     tabs = RatatuiRuby::Widgets::Tabs.new(
       titles: ["A", "B"],
       selected_index: DuckInt.new(1),
-      padding_left: DuckInt.new(2),
-      padding_right: DuckInt.new(3)
+      padding_left: 2,
+      padding_right: 3
     )
     assert_equal 1, tabs.selected_index
+    # padding now accepts duck-typed values (Integer, String, Line) without coercion
     assert_equal 2, tabs.padding_left
     assert_equal 3, tabs.padding_right
   end

@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 # Manifests hold a copy of the version number and should be changed manually.
 # Use Regexp lookarounds in `pattern` to match the version number.
