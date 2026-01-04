@@ -138,7 +138,10 @@ module RatatuiRuby
 
       ##
       # :attr_reader: legend_position
-      # Position of the legend (<tt>:top_left</tt>, <tt>:top_right</tt>, <tt>:bottom_left</tt>, <tt>:bottom_right</tt>).
+      # Position of the legend.
+      #
+      # Corners: <tt>:top_left</tt>, <tt>:top_right</tt>, <tt>:bottom_left</tt>, <tt>:bottom_right</tt>.
+      # Edges: <tt>:top</tt>, <tt>:bottom</tt>, <tt>:left</tt>, <tt>:right</tt>.
 
       ##
       # :attr_reader: hidden_legend_constraints
@@ -151,7 +154,7 @@ module RatatuiRuby
       # [y_axis] Y Axis config.
       # [block] Wrapper (optional).
       # [style] Base style (optional).
-      # [legend_position] Symbol (<tt>:top_left</tt>, <tt>:top_right</tt>, <tt>:bottom_left</tt>, <tt>:bottom_right</tt>).
+      # [legend_position] Symbol — corners: <tt>:top_left</tt>, <tt>:top_right</tt>, <tt>:bottom_left</tt>, <tt>:bottom_right</tt>; edges: <tt>:top</tt>, <tt>:bottom</tt>, <tt>:left</tt>, <tt>:right</tt>.
       # [hidden_legend_constraints] Array of two Constraints [width, height] (optional).
       def initialize(datasets:, x_axis:, y_axis:, block: nil, style: nil, legend_position: nil, hidden_legend_constraints: [])
         super

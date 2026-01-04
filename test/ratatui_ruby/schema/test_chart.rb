@@ -143,5 +143,53 @@ module RatatuiRuby
         assert_includes ansi_output, "\e[32m", "Dataset name should have green foreground"
       end
     end
+
+    # Edge-center legend positions: :top, :bottom, :left, :right
+    # These complement the corner positions (:top_left, :top_right, :bottom_left, :bottom_right)
+
+    def test_legend_position_top
+      chart = chart_with_legend_position(:top)
+
+      with_test_terminal(30, 12) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        assert_snapshot("legend_position_top")
+      end
+    end
+
+    def test_legend_position_bottom
+      chart = chart_with_legend_position(:bottom)
+
+      with_test_terminal(30, 12) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        assert_snapshot("legend_position_bottom")
+      end
+    end
+
+    def test_legend_position_left
+      chart = chart_with_legend_position(:left)
+
+      with_test_terminal(30, 12) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        assert_snapshot("legend_position_left")
+      end
+    end
+
+    def test_legend_position_right
+      chart = chart_with_legend_position(:right)
+
+      with_test_terminal(30, 12) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        assert_snapshot("legend_position_right")
+      end
+    end
+
+    private def chart_with_legend_position(position)
+      Widgets::Chart.new(
+        datasets: [Widgets::Dataset.new(name: "DS", data: [[0.0, 0.0], [10.0, 10.0]], marker: :dot)],
+        x_axis: Widgets::Axis.new(bounds: [0.0, 10.0]),
+        y_axis: Widgets::Axis.new(bounds: [0.0, 10.0]),
+        legend_position: position
+      )
+    end
   end
 end

@@ -115,8 +115,12 @@ pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
         let pos_sym: Symbol = legend_position_val.funcall("to_sym", ())?;
         let pos = match pos_sym.to_string().as_str() {
             "top_left" => LegendPosition::TopLeft,
+            "top" => LegendPosition::Top,
             "bottom_left" => LegendPosition::BottomLeft,
+            "bottom" => LegendPosition::Bottom,
             "bottom_right" => LegendPosition::BottomRight,
+            "left" => LegendPosition::Left,
+            "right" => LegendPosition::Right,
             _ => LegendPosition::TopRight,
         };
         chart = chart.legend_position(Some(pos));
