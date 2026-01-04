@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # BarChart (Bar, BarGroup) Example
 
-[![](../../doc/images/widget_barchart.png)](app.rb)
+[![](../../doc/images/widget_barchart.png)](app.rb)
 
 Visualizes categorical data with interactive attribute cycling.
 

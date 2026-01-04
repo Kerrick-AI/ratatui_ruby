@@ -4,7 +4,7 @@
 -->
 # Block Example
 
-[![](../../doc/images/widget_block.png)](app.rb)
+[![](../../doc/images/widget_block.png)](app.rb)
 
 This example demonstrates the versatile `Block` widget, which provides the visual container, borders, and titles for almost every other widget in `ratatui_ruby`.
 

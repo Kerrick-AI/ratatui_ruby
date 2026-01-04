@@ -4,7 +4,7 @@
 -->
 # Overlay Example
 
-[![](../../doc/images/widget_overlay.png)](app.rb)
+[![](../../doc/images/widget_overlay.png)](app.rb)
 
 This example demonstrates the `Overlay` composition pattern for layering widgets with depth. Modals, notifications, and floating panels all require stacking widgets on top of each other.
 
