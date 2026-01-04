@@ -12,6 +12,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- **`assert_plain_snapshot` Alias**: `RatatuiRuby::TestHelper#assert_plain_snapshot` is now an alias for `assert_snapshot`, making the naming symmetric with `assert_rich_snapshot`. Use it when you only care about text content, not styling.
+- **Symbol Shortcuts for `bar_set`**: `Sparkline` and `BarChart` now accept `:nine_levels` (full 9-character gradient) and `:three_levels` (simplified empty/half/full) as intuitive shortcuts instead of requiring custom character hashes.
+- **`:half_block` Marker**: `Chart` `Dataset` now supports `:half_block` marker for higher resolution rendering using ▀ and ▄ characters.
+- **`assert_snapshots` Method**: `RatatuiRuby::TestHelper#assert_snapshots` (plural) calls both `assert_snapshot` and `assert_rich_snapshot` with the same name, generating both `.txt` and `.ansi` files for documentation and display purposes.
+- **Edge-Center Legend Positions**: `Chart` `legend_position` now accepts `:top`, `:bottom`, `:left`, and `:right` in addition to the existing corner positions (`:top_left`, `:top_right`, `:bottom_left`, `:bottom_right`).
+- **`:reset` Color**: `Style` `fg` and `bg` now accept `:reset` to explicitly clear any inherited foreground or background color, restoring the terminal's default.
+
 ### Changed
 
 ### Fixed
