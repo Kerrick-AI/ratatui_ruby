@@ -156,9 +156,10 @@ module RatatuiRuby
       # [value_style]
       #   Style object for values (optional).
       # [bar_set]
-      #   Hash or Array: Custom characters for the bars.
+      #   Symbol, Hash, or Array: Custom characters for bars.
+      #   Symbols: <tt>:nine_levels</tt> (default gradient), <tt>:three_levels</tt> (simplified).
       def initialize(data:, bar_width: 3, bar_gap: 1, group_gap: 0, max: nil, style: nil, block: nil, direction: :vertical, label_style: nil, value_style: nil, bar_set: nil)
-        if bar_set
+        if bar_set && !bar_set.is_a?(Symbol)
           if bar_set.is_a?(Array) && bar_set.size == 9
             # Convert Array to Hash using BAR_KEYS order
             bar_set = BAR_KEYS.zip(bar_set).to_h

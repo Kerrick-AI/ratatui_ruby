@@ -171,8 +171,28 @@ pub fn parse_border_set<'a>(
 
 pub fn parse_bar_set<'a>(set_val: Value, bump: &'a Bump) -> Result<symbols::bar::Set<'a>, Error> {
     let ruby = magnus::Ruby::get().unwrap();
-    let hash = magnus::RHash::from_value(set_val)
-        .ok_or_else(|| Error::new(ruby.exception_type_error(), "expected hash for bar_set"))?;
+
+    // Check if set_val is a symbol shortcut
+    if let Ok(sym) = magnus::Symbol::from_value(set_val)
+        .ok_or::<Error>(Error::new(ruby.exception_type_error(), ""))
+    {
+        let sym_str = sym.name().unwrap_or_default();
+        return match sym_str.as_ref() {
+            "nine_levels" => Ok(symbols::bar::NINE_LEVELS),
+            "three_levels" => Ok(symbols::bar::THREE_LEVELS),
+            _ => Err(Error::new(
+                ruby.exception_arg_error(),
+                format!("unknown bar_set symbol: :{sym_str}"),
+            )),
+        };
+    }
+
+    let hash = magnus::RHash::from_value(set_val).ok_or_else(|| {
+        Error::new(
+            ruby.exception_type_error(),
+            "expected symbol or hash for bar_set",
+        )
+    })?;
 
     let get_char = |key: &str| -> Result<Option<&'a str>, Error> {
         let mut val: Value = hash

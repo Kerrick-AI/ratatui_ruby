@@ -103,9 +103,10 @@ module RatatuiRuby
       # [direction] +:left_to_right+ or +:right_to_left+ (default: +:left_to_right+).
       # [absent_value_symbol] Character for absent (nil) values (optional).
       # [absent_value_style] Style for absent (nil) values (optional).
-      # [bar_set] Hash or Array of custom characters (optional).
+      # [bar_set] Symbol, Hash, or Array of custom characters (optional).
+      #   Symbols: <tt>:nine_levels</tt> (default gradient), <tt>:three_levels</tt> (simplified).
       def initialize(data:, max: nil, style: nil, block: nil, direction: :left_to_right, absent_value_symbol: nil, absent_value_style: nil, bar_set: nil)
-        if bar_set
+        if bar_set && !bar_set.is_a?(Symbol)
           if bar_set.is_a?(Array) && bar_set.size == 9
             # Convert Array to Hash using BAR_KEYS order
             bar_set = BAR_KEYS.zip(bar_set).to_h

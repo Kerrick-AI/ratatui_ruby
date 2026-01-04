@@ -56,7 +56,7 @@ module RatatuiRuby
     # [name] The name of the dataset.
     # [data] Array of arrays [[x, y], [x, y]] (Floats).
     # [style] The style of the line.
-    # [marker] Symbol (<tt>:dot</tt>, <tt>:braille</tt>, <tt>:block</tt>, <tt>:bar</tt>)
+    # [marker] Symbol (<tt>:dot</tt>, <tt>:braille</tt>, <tt>:block</tt>, <tt>:bar</tt>, <tt>:half_block</tt>)
     # [graph_type] Symbol (<tt>:line</tt>, <tt>:scatter</tt>)
     class Dataset < Data.define(:name, :data, :style, :marker, :graph_type)
       ##
@@ -81,7 +81,9 @@ module RatatuiRuby
 
       ##
       # :attr_reader: marker
-      # Marker type (<tt>:dot</tt>, <tt>:braille</tt>).
+      # Marker type (<tt>:dot</tt>, <tt>:braille</tt>, <tt>:block</tt>, <tt>:bar</tt>, <tt>:half_block</tt>).
+      #
+      # <tt>:half_block</tt> uses ▀ and ▄ characters for higher resolution than <tt>:dot</tt>.
 
       ##
       # :attr_reader: graph_type

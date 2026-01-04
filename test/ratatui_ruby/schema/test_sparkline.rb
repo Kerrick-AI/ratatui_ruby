@@ -29,9 +29,7 @@ class TestSparkline < Minitest::Test
     with_test_terminal(10, 3) do
       spark = RatatuiRuby::Widgets::Sparkline.new(data: [1, 2, 3, 4])
       RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
-      assert_equal "  ▂█      ", buffer_content[0]
-      assert_equal " ▄██      ", buffer_content[1]
-      assert_equal "▆███      ", buffer_content[2]
+      assert_snapshot("sparkline_render")
     end
   end
 
@@ -44,10 +42,7 @@ class TestSparkline < Minitest::Test
     with_test_terminal(10, 3) do
       spark = RatatuiRuby::Widgets::Sparkline.new(data: [1, 2, 3, 4], direction: :right_to_left)
       RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
-      # Data renders right-to-left: from right edge, filling leftward
-      assert_equal "      █▂  ", buffer_content[0]
-      assert_equal "      ██▄ ", buffer_content[1]
-      assert_equal "      ███▆", buffer_content[2]
+      assert_snapshot("sparkline_right_to_left")
     end
   end
 
@@ -112,6 +107,24 @@ class TestSparkline < Minitest::Test
       ansi_output = render_rich_buffer
       # Red foreground = ANSI 31
       assert_includes ansi_output, "\e[31m", "Sparkline absent_value_style should apply red foreground"
+    end
+  end
+
+  def test_bar_set_nine_levels
+    # :nine_levels uses the full 9-character gradient (default ratatui behavior)
+    with_test_terminal(10, 3) do
+      spark = RatatuiRuby::Widgets::Sparkline.new(data: [1, 2, 3, 4], bar_set: :nine_levels)
+      RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
+      assert_snapshot("bar_set_nine_levels")
+    end
+  end
+
+  def test_bar_set_three_levels
+    # :three_levels uses simplified 3-level (empty, half, full)
+    with_test_terminal(10, 3) do
+      spark = RatatuiRuby::Widgets::Sparkline.new(data: [1, 2, 3, 4], bar_set: :three_levels)
+      RatatuiRuby.draw { |f| f.render_widget(spark, f.area) }
+      assert_snapshot("bar_set_three_levels")
     end
   end
 end

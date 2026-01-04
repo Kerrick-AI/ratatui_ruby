@@ -35,7 +35,7 @@ module RatatuiRuby
 
       with_test_terminal(80, 24) do
         RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-        assert_snapshot("chart_rendering")
+        assert_snapshots("chart_rendering")
       end
     end
 
@@ -68,7 +68,7 @@ module RatatuiRuby
 
       with_test_terminal(80, 24) do
         RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-        assert_snapshot("axis_labels_alignment")
+        assert_snapshots("axis_labels_alignment")
       end
     end
 
@@ -124,7 +124,7 @@ module RatatuiRuby
 
       with_test_terminal(30, 12) do
         RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-        assert_snapshot("legend_position_top")
+        assert_snapshots("legend_position_top")
       end
     end
 
@@ -133,7 +133,7 @@ module RatatuiRuby
 
       with_test_terminal(30, 12) do
         RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-        assert_snapshot("legend_position_bottom")
+        assert_snapshots("legend_position_bottom")
       end
     end
 
@@ -142,7 +142,7 @@ module RatatuiRuby
 
       with_test_terminal(30, 12) do
         RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-        assert_snapshot("legend_position_left")
+        assert_snapshots("legend_position_left")
       end
     end
 
@@ -151,7 +151,29 @@ module RatatuiRuby
 
       with_test_terminal(30, 12) do
         RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-        assert_snapshot("legend_position_right")
+        assert_snapshots("legend_position_right")
+      end
+    end
+
+    def test_half_block_marker
+      # Verifies Chart Dataset supports :half_block marker (higher resolution than :dot)
+      datasets = [
+        Widgets::Dataset.new(
+          name: "HB",
+          data: [[0.0, 0.0], [10.0, 10.0]],
+          marker: :half_block
+        ),
+      ]
+
+      chart = Widgets::Chart.new(
+        datasets:,
+        x_axis: Widgets::Axis.new(bounds: [0.0, 10.0]),
+        y_axis: Widgets::Axis.new(bounds: [0.0, 10.0])
+      )
+
+      with_test_terminal(30, 12) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        assert_snapshots("half_block_marker")
       end
     end
 

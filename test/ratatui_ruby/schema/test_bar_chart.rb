@@ -52,37 +52,21 @@ class TestBarChart < Minitest::Test
 
   def test_render
     with_test_terminal(20, 5) do
-      # 10x5 area
       chart = RatatuiRuby::Widgets::BarChart.new(data: { "A" => 1, "B" => 2 }, bar_width: 3)
       RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-
-      assert_equal "    ███             ", buffer_content[0]
-      assert_equal "    ███             ", buffer_content[1]
-      assert_equal "███ ███             ", buffer_content[2]
-      assert_equal "█1█ █2█             ", buffer_content[3]
-      assert_equal "A   B               ", buffer_content[4]
+      assert_snapshot("barchart_render")
     end
   end
 
   def test_render_horizontal
     with_test_terminal(20, 5) do
-      # 20x5 area, horizontal bars
       chart = RatatuiRuby::Widgets::BarChart.new(
         data: { "A" => 1, "B" => 2 },
         bar_width: 1,
         direction: :horizontal
       )
       RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-
-      # In horizontal mode, bars grow from left to right.
-      # Labels and values are on the left of the bar.
-      # Width is 20. Bar A (val 1), Bar B (val 2). Max is 2.
-      # Bar A should be half width of Bar B.
-      assert_equal "A 1████████         ", buffer_content[0]
-      assert_equal "                    ", buffer_content[1]
-      assert_equal "B 2█████████████████", buffer_content[2]
-      assert_equal "                    ", buffer_content[3]
-      assert_equal "                    ", buffer_content[4]
+      assert_snapshot("barchart_horizontal")
     end
   end
 
@@ -101,16 +85,20 @@ class TestBarChart < Minitest::Test
     with_test_terminal(20, 5) do
       chart = RatatuiRuby::Widgets::BarChart.new(data: [bar_group], bar_width: 5)
       RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
-      content = buffer_content.join("\n")
+      assert_snapshots("barchart_styled_label")
+    end
+  end
 
-      # The group label should render as "Group" not as "#<data RatatuiRuby::Text::Line..."
-      assert_includes content, "Group", "Styled BarGroup label should appear in output"
-      refute_includes content, "#<data", "Inspect string should not appear in output"
-      refute_includes content, "Line", "Class name should not appear in output"
-
-      # Verify the styling is applied (yellow = ANSI code 33)
-      ansi_output = render_rich_buffer
-      assert_includes ansi_output, "\e[33m", "Group label should have yellow foreground"
+  def test_bar_set_three_levels
+    # :three_levels uses simplified 3-level rendering
+    with_test_terminal(20, 5) do
+      chart = RatatuiRuby::Widgets::BarChart.new(
+        data: { "A" => 1, "B" => 2, "C" => 3 },
+        bar_width: 3,
+        bar_set: :three_levels
+      )
+      RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+      assert_snapshot("barchart_three_levels")
     end
   end
 end

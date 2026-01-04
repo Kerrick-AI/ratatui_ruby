@@ -75,6 +75,7 @@ pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
             "braille" => symbols::Marker::Braille,
             "block" => symbols::Marker::Block,
             "bar" => symbols::Marker::Bar,
+            "half_block" => symbols::Marker::HalfBlock,
             _ => symbols::Marker::Dot,
         };
 
