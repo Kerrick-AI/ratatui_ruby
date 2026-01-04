@@ -39,6 +39,7 @@ module RatatuiRuby
     # * <tt>:dark_gray</tt>, <tt>:light_red</tt>, <tt>:light_green</tt>,
     #   <tt>:light_yellow</tt>, <tt>:light_blue</tt>, <tt>:light_magenta</tt>,
     #   <tt>:light_cyan</tt>, <tt>:white</tt>
+    # * <tt>:reset</tt> — Restores the terminal's default color.
     #
     # ==== String
     # Represents a specific RGB color using a Hex code (<tt>"#RRGGBB"</tt>).

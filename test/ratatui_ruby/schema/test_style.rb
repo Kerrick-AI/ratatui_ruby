@@ -40,4 +40,23 @@ class TestStyle < Minitest::Test
       assert_equal :indexed_196, cell.bg, "Indexed bg color should be preserved"
     end
   end
+
+  # :reset restores the terminal's default foreground/background color.
+  # Unlike nil (which means "inherit from parent"), :reset explicitly
+  # instructs the terminal to use its configured default.
+  def test_reset_color_rendering
+    with_test_terminal(10, 1) do
+      paragraph = RatatuiRuby::Widgets::Paragraph.new(
+        text: "X",
+        style: RatatuiRuby::Style::Style.new(fg: :reset, bg: :reset)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(paragraph, f.area) }
+
+      cell = RatatuiRuby.get_cell_at(0, 0)
+      assert_equal "X", cell.char
+      # Reset colors are returned as nil (terminal default)
+      assert_nil cell.fg, ":reset fg should render as nil (terminal default)"
+      assert_nil cell.bg, ":reset bg should render as nil (terminal default)"
+    end
+  end
 end
