@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use crate::style::parse_block;
+use crate::text::{parse_line, parse_span};
 use bumpalo::Bump;
 use magnus::{prelude::*, Error, Value};
 use ratatui::{layout::Rect, text::Line, widgets::Tabs, Frame};
@@ -13,7 +14,39 @@ pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
     Ok(())
 }
 
-use crate::text::parse_line;
+/// Parses padding value with duck-typing support:
+/// - Integer: generates that many spaces
+/// - Line: uses styled Line directly
+/// - Span: wraps in Line
+/// - String or `to_s` responder: converts to Line
+fn parse_padding(val: Value) -> Result<Line<'static>, Error> {
+    // Handle nil or zero
+    if val.is_nil() {
+        return Ok(Line::from(""));
+    }
+
+    // Try as Integer first (most common case)
+    if let Ok(n) = usize::try_convert(val) {
+        if n == 0 {
+            return Ok(Line::from(""));
+        }
+        return Ok(Line::from(" ".repeat(n)));
+    }
+
+    // Try to parse as Line
+    if let Ok(line) = parse_line(val) {
+        return Ok(line);
+    }
+
+    // Try to parse as Span (wrap in Line)
+    if let Ok(span) = parse_span(val) {
+        return Ok(Line::from(vec![span]));
+    }
+
+    // Fallback: call to_s and convert to Line
+    let s: String = val.funcall("to_s", ())?;
+    Ok(Line::from(s))
+}
 
 fn create_tabs(node: Value, bump: &Bump) -> Result<Tabs<'_>, Error> {
     let ruby = magnus::Ruby::get().unwrap();
@@ -22,8 +55,8 @@ fn create_tabs(node: Value, bump: &Bump) -> Result<Tabs<'_>, Error> {
     let block_val: Value = node.funcall("block", ())?;
     let divider_val: Value = node.funcall("divider", ())?;
     let highlight_style_val: Value = node.funcall("highlight_style", ())?;
-    let padding_left: usize = node.funcall("padding_left", ())?;
-    let padding_right: usize = node.funcall("padding_right", ())?;
+    let padding_left_val: Value = node.funcall("padding_left", ())?;
+    let padding_right_val: Value = node.funcall("padding_right", ())?;
 
     let titles_array = magnus::RArray::from_value(titles_val)
         .ok_or_else(|| Error::new(ruby.exception_type_error(), "expected array for titles"))?;
@@ -44,8 +77,12 @@ fn create_tabs(node: Value, bump: &Bump) -> Result<Tabs<'_>, Error> {
     let mut tabs = Tabs::new(titles).select(selected_index);
 
     if !divider_val.is_nil() {
-        let divider: String = divider_val.funcall("to_s", ())?;
-        tabs = tabs.divider(divider);
+        if let Ok(span) = parse_span(divider_val) {
+            tabs = tabs.divider(span);
+        } else {
+            let divider: String = divider_val.funcall("to_s", ())?;
+            tabs = tabs.divider(divider);
+        }
     }
 
     if !highlight_style_val.is_nil() {
@@ -62,10 +99,11 @@ fn create_tabs(node: Value, bump: &Bump) -> Result<Tabs<'_>, Error> {
         tabs = tabs.block(parse_block(block_val, bump)?);
     }
 
-    if padding_left > 0 || padding_right > 0 {
-        let left_str = " ".repeat(padding_left);
-        let right_str = " ".repeat(padding_right);
-        tabs = tabs.padding(left_str, right_str);
+    // Handle duck-typed padding: Integer (spaces), String, Line, or anything with to_s
+    let left_padding = parse_padding(padding_left_val)?;
+    let right_padding = parse_padding(padding_right_val)?;
+    if !left_padding.spans.is_empty() || !right_padding.spans.is_empty() {
+        tabs = tabs.padding(left_padding, right_padding);
     }
 
     Ok(tabs)
@@ -101,6 +139,8 @@ pub fn width(node: Value) -> Result<usize, Error> {
     if titles_count > 1 {
         let divider_width = if divider_val.is_nil() {
             1 // Default divider is "|"
+        } else if let Ok(span) = parse_span(divider_val) {
+            span.width()
         } else {
             let d: String = divider_val.funcall("to_s", ())?;
             ratatui::text::Span::raw(d).width()

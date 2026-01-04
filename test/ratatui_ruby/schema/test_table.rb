@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -551,6 +553,63 @@ class TestTable < Minitest::Test
       # Unselected row should not have the highlight style
       unselected_cell = RatatuiRuby.get_cell_at(0, 0)
       refute_equal :yellow, unselected_cell.bg
+    end
+  end
+
+  def test_styled_highlight_symbol_renders_content_not_inspect_string
+    styled_symbol = RatatuiRuby::Text::Span.new(
+      content: "▶ ",
+      style: RatatuiRuby::Style::Style.new(fg: :magenta)
+    )
+
+    with_test_terminal(20, 2) do
+      table = RatatuiRuby::Widgets::Table.new(
+        rows: [["Row 1"], ["Row 2"]],
+        widths: [RatatuiRuby::Layout::Constraint.length(10)],
+        selected_row: 0,
+        highlight_symbol: styled_symbol,
+        highlight_spacing: :always
+      )
+
+      RatatuiRuby.draw { |f| f.render_widget(table, f.area) }
+      content = buffer_content.join("\n")
+
+      # The highlight symbol should render as "▶" not as "#<data RatatuiRuby::Text::Span..."
+      assert_includes content, "▶", "Styled highlight symbol content should appear in output"
+      refute_includes content, "#<data", "Inspect string should not appear in output"
+      refute_includes content, "Span", "Class name should not appear in output"
+
+      # Verify the styling is actually applied (magenta = ANSI code 35)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[35m", "Highlight symbol should have magenta foreground"
+    end
+  end
+
+  def test_style_applies_to_table_area
+    with_test_terminal(20, 3) do
+      rows = [RatatuiRuby::Widgets::Row.new(cells: ["A", "B"])]
+      table = RatatuiRuby::Widgets::Table.new(rows:, style: RatatuiRuby::Style::Style.new(fg: :cyan))
+      RatatuiRuby.draw { |f| f.render_widget(table, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Cyan foreground = ANSI 36
+      assert_includes ansi_output, "\e[36m", "Table style should apply cyan foreground"
+    end
+  end
+
+  def test_row_highlight_style_applies_to_selected_row
+    with_test_terminal(20, 3) do
+      rows = [RatatuiRuby::Widgets::Row.new(cells: ["Row 1"]), RatatuiRuby::Widgets::Row.new(cells: ["Row 2"])]
+      table = RatatuiRuby::Widgets::Table.new(
+        rows:,
+        selected_row: 0,
+        row_highlight_style: RatatuiRuby::Style::Style.new(bg: :yellow)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(table, f.area) }
+
+      ansi_output = render_rich_buffer
+      # Yellow background = ANSI 43
+      assert_includes ansi_output, "\e[43m", "Table row_highlight_style should apply yellow background"
     end
   end
 end

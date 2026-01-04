@@ -12,9 +12,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- **Tabs `padding_left` and `padding_right`**: Now accept `Integer` (for spaces), `String`, or `Text::Line` for styled padding content. Previously only accepted `Integer`. Passing a `Line` object allows colored or decorated padding.
+
 ### Changed
 
 ### Fixed
+
+- **Styled Text Parsing**: Fixed multiple widgets incorrectly rendering styled text objects as Ruby inspect strings (e.g., `#<data RatatuiRuby::Text::Span...>`) instead of their styled content:
+  - `Tabs` `divider`: Now correctly renders `Text::Span` objects.
+  - `Table` `highlight_symbol`: Now correctly renders `Text::Span` objects.
+  - `BarChart` `BarGroup` `label`: Now correctly renders `Text::Line` objects.
+  - `Chart` `Axis` `title`: Now correctly renders `Text::Line` objects.
+  - `Chart` `Axis` `labels`: Now correctly renders `Text::Line` objects.
+  - `Chart` `Dataset` `name`: Now correctly renders `Text::Line` objects.
 
 ### Removed
 

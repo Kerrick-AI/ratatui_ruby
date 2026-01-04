@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use crate::style::{parse_block, parse_style};
+use crate::text::parse_line;
 use bumpalo::Bump;
 use magnus::{prelude::*, Error, Symbol, Value};
 use ratatui::{
@@ -12,6 +13,7 @@ use ratatui::{
     Frame,
 };
 
+#[allow(clippy::too_many_lines)]
 pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
     let bump = Bump::new();
     let ruby = magnus::Ruby::get().unwrap();
@@ -59,7 +61,13 @@ pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
         let index = isize::try_from(i)
             .map_err(|e| Error::new(ruby.exception_range_error(), e.to_string()))?;
         let ds_val: Value = datasets_val.entry(index)?;
-        let name: String = ds_val.funcall("name", ())?;
+        let name_val: Value = ds_val.funcall("name", ())?;
+        let name = if let Ok(line) = parse_line(name_val) {
+            line
+        } else {
+            let name_str: String = name_val.funcall("to_s", ())?;
+            ratatui::text::Line::from(name_str)
+        };
         let marker_sym: Symbol = ds_val.funcall("marker", ())?;
         let graph_type_sym: Symbol = ds_val.funcall("graph_type", ())?;
 
@@ -132,7 +140,15 @@ pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
 
 fn parse_axis(axis_val: Value) -> Result<Axis<'static>, Error> {
     let ruby = magnus::Ruby::get().unwrap();
-    let title: String = axis_val.funcall("title", ())?;
+    let title_val: Value = axis_val.funcall("title", ())?;
+    let title = if title_val.is_nil() {
+        ratatui::text::Line::from("")
+    } else if let Ok(line) = parse_line(title_val) {
+        line
+    } else {
+        let title_str: String = title_val.funcall("to_s", ())?;
+        ratatui::text::Line::from(title_str)
+    };
     let bounds_val: magnus::RArray = axis_val.funcall("bounds", ())?;
     let labels_val: magnus::RArray = axis_val.funcall("labels", ())?;
     let style_val: Value = axis_val.funcall("style", ())?;
@@ -144,8 +160,14 @@ fn parse_axis(axis_val: Value) -> Result<Axis<'static>, Error> {
     for i in 0..labels_val.len() {
         let index = isize::try_from(i)
             .map_err(|e| Error::new(ruby.exception_range_error(), e.to_string()))?;
-        let label: String = labels_val.entry(index)?;
-        labels.push(Span::from(label));
+        let entry_val: Value = labels_val.entry(index)?;
+        let label = if let Ok(line) = parse_line(entry_val) {
+            line
+        } else {
+            let label_str: String = entry_val.funcall("to_s", ())?;
+            ratatui::text::Line::from(label_str)
+        };
+        labels.push(label);
     }
 
     let mut axis = Axis::default().title(title).bounds(bounds).labels(labels);

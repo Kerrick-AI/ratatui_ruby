@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -81,6 +83,34 @@ class TestBarChart < Minitest::Test
       assert_equal "B 2█████████████████", buffer_content[2]
       assert_equal "                    ", buffer_content[3]
       assert_equal "                    ", buffer_content[4]
+    end
+  end
+
+  def test_styled_bar_group_label_renders_content_not_inspect_string
+    styled_label = RatatuiRuby::Text::Line.new(
+      spans: [
+        RatatuiRuby::Text::Span.new(content: "Group", style: RatatuiRuby::Style::Style.new(fg: :yellow)),
+      ]
+    )
+
+    bar_group = RatatuiRuby::Widgets::BarChart::BarGroup.new(
+      label: styled_label,
+      bars: [RatatuiRuby::Widgets::BarChart::Bar.new(value: 5)]
+    )
+
+    with_test_terminal(20, 5) do
+      chart = RatatuiRuby::Widgets::BarChart.new(data: [bar_group], bar_width: 5)
+      RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+      content = buffer_content.join("\n")
+
+      # The group label should render as "Group" not as "#<data RatatuiRuby::Text::Line..."
+      assert_includes content, "Group", "Styled BarGroup label should appear in output"
+      refute_includes content, "#<data", "Inspect string should not appear in output"
+      refute_includes content, "Line", "Class name should not appear in output"
+
+      # Verify the styling is applied (yellow = ANSI code 33)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[33m", "Group label should have yellow foreground"
     end
   end
 end

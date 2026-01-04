@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "test_helper"
 
@@ -98,5 +100,97 @@ class TestTabs < Minitest::Test
     line_title = RatatuiRuby::Text::Line.from_string("Foo") # width 3
     tabs = RatatuiRuby::Widgets::Tabs.new(titles: [line_title, "Bar"]) # 3 + 1 + 3 = 7
     assert_equal 7, tabs.width
+  end
+
+  def test_styled_divider_renders_content_not_inspect_string
+    styled_divider = RatatuiRuby::Text::Span.new(
+      content: " ▸ ",
+      style: RatatuiRuby::Style::Style.new(fg: :cyan)
+    )
+    tabs = RatatuiRuby::Widgets::Tabs.new(
+      titles: ["A", "B"],
+      divider: styled_divider
+    )
+
+    with_test_terminal(20, 1) do
+      RatatuiRuby.draw { |f| f.render_widget(tabs, f.area) }
+      line = buffer_content[0]
+
+      # The divider should render as " ▸ " not as "#<data RatatuiRuby::Text::Span..."
+      assert_includes line, "▸", "Styled divider content should appear in output"
+      refute_includes line, "#<data", "Inspect string should not appear in output"
+      refute_includes line, "Span", "Class name should not appear in output"
+
+      # Verify the styling is actually applied (cyan = ANSI code 36)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[36m", "Divider should have cyan foreground"
+      assert_includes ansi_output, "▸", "Divider character should appear in styled output"
+    end
+  end
+
+  def test_padding_with_styled_line
+    styled_padding = RatatuiRuby::Text::Line.new(
+      spans: [RatatuiRuby::Text::Span.new(content: ">> ", style: RatatuiRuby::Style::Style.new(fg: :magenta))]
+    )
+
+    with_test_terminal(20, 1) do
+      tabs = RatatuiRuby::Widgets::Tabs.new(
+        titles: ["A", "B"],
+        padding_left: styled_padding
+      )
+      RatatuiRuby.draw { |f| f.render_widget(tabs, f.area) }
+      line = buffer_content[0]
+
+      # Should render styled padding content
+      assert_includes line, ">>", "Styled padding content should appear"
+      refute_includes line, "#<data", "Inspect string should not appear"
+
+      # Verify styling (magenta = ANSI 35)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[35m", "Padding should have magenta foreground"
+    end
+  end
+
+  def test_padding_with_string
+    with_test_terminal(20, 1) do
+      tabs = RatatuiRuby::Widgets::Tabs.new(
+        titles: ["A", "B"],
+        padding_left: "*** "
+      )
+      RatatuiRuby.draw { |f| f.render_widget(tabs, f.area) }
+      line = buffer_content[0]
+
+      # Should render string padding
+      assert_includes line, "***", "String padding should appear"
+    end
+  end
+
+  def test_style_applies_to_tabs_area
+    with_test_terminal(20, 1) do
+      tabs = RatatuiRuby::Widgets::Tabs.new(
+        titles: ["A", "B"],
+        style: RatatuiRuby::Style::Style.new(fg: :yellow)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(tabs, f.area) }
+
+      # Verify yellow foreground is applied (ANSI 33)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[33m", "Tabs style should apply yellow foreground"
+    end
+  end
+
+  def test_highlight_style_applies_to_selected_tab
+    with_test_terminal(20, 1) do
+      tabs = RatatuiRuby::Widgets::Tabs.new(
+        titles: ["Tab1", "Tab2"],
+        selected_index: 0,
+        highlight_style: RatatuiRuby::Style::Style.new(fg: :red)
+      )
+      RatatuiRuby.draw { |f| f.render_widget(tabs, f.area) }
+
+      # Verify red foreground (ANSI 31) applied to selected tab
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[31m", "Highlight style should apply red foreground"
+    end
   end
 end

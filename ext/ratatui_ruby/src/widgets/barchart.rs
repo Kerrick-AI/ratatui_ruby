@@ -48,12 +48,14 @@ pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
             let group_obj: Value = array.entry(index)?;
 
             let label_val: Value = group_obj.funcall("label", ())?;
-            let label_str: String = if label_val.is_nil() {
-                String::new()
+            let group_label: Line = if label_val.is_nil() {
+                Line::from("")
+            } else if let Ok(line) = parse_line(label_val) {
+                line
             } else {
-                label_val.funcall("to_s", ())?
+                let label_str: String = label_val.funcall("to_s", ())?;
+                Line::from(label_str)
             };
-            let label_ref = bump.alloc_str(&label_str) as &str;
 
             let bars_array: RArray = group_obj.funcall("bars", ())?;
             let mut bars: Vec<Bar> = Vec::new();
@@ -110,8 +112,8 @@ pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
             }
 
             let mut group = BarGroup::new(bars);
-            if !label_ref.is_empty() {
-                group = group.label(Line::from(label_ref));
+            if !group_label.spans.is_empty() {
+                group = group.label(group_label);
             }
             bar_chart = bar_chart.data(group);
         }

@@ -49,11 +49,13 @@ module RatatuiRuby
 
       ##
       # :attr_reader: padding_left
-      # Left padding for the tabs area (Integer, default: 0).
+      # Left padding for the tabs area.
+      # Accepts Integer (number of spaces), String, or Line for styled content.
 
       ##
       # :attr_reader: padding_right
-      # Right padding for the tabs area (Integer, default: 0).
+      # Right padding for the tabs area.
+      # Accepts Integer (number of spaces), String, or Line for styled content.
 
       # Creates a new Tabs widget.
       #
@@ -63,8 +65,8 @@ module RatatuiRuby
       # [divider] String (optional).
       # [highlight_style] Style (optional).
       # [style] Style (optional).
-      # [padding_left] Integer (default: 0).
-      # [padding_right] Integer (default: 0).
+      # [padding_left] Integer, String, or Line (default: 0).
+      # [padding_right] Integer, String, or Line (default: 0).
       def initialize(titles: [], selected_index: 0, block: nil, divider: nil, highlight_style: nil, style: nil, padding_left: 0, padding_right: 0)
         super(
           titles:,
@@ -73,8 +75,8 @@ module RatatuiRuby
           divider:,
           highlight_style:,
           style:,
-          padding_left: Integer(padding_left),
-          padding_right: Integer(padding_right)
+          padding_left:,
+          padding_right:
         )
       end
 

@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+#--
 # SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
+#++
 
 require "ratatui_ruby"
 require "minitest/autorun"
@@ -82,6 +84,64 @@ module RatatuiRuby
       assert_includes buffer, "Value"
       assert_includes buffer, "Aligned Chart"
       assert_includes buffer, "TestDS"
+    end
+
+    def test_styled_axis_title_renders_content_not_inspect_string
+      styled_title = Text::Line.new(
+        spans: [Text::Span.new(content: "StyledTime", style: Style::Style.new(fg: :cyan))]
+      )
+
+      datasets = [
+        Widgets::Dataset.new(name: "DS1", data: [[0.0, 0.0], [10.0, 10.0]], marker: :dot),
+      ]
+
+      chart = Widgets::Chart.new(
+        datasets:,
+        x_axis: Widgets::Axis.new(title: styled_title, bounds: [0.0, 10.0]),
+        y_axis: Widgets::Axis.new(bounds: [0.0, 10.0])
+      )
+
+      with_test_terminal(40, 10) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        content = buffer_content.join("\n")
+
+        # Should render the styled title content, not inspect string
+        assert_includes content, "StyledTime", "Styled axis title should appear in output"
+        refute_includes content, "#<data", "Inspect string should not appear"
+
+        # Verify styling (cyan = ANSI 36)
+        ansi_output = render_rich_buffer
+        assert_includes ansi_output, "\e[36m", "Axis title should have cyan foreground"
+      end
+    end
+
+    def test_styled_dataset_name_renders_content_not_inspect_string
+      styled_name = Text::Line.new(
+        spans: [Text::Span.new(content: "StyledDS", style: Style::Style.new(fg: :green))]
+      )
+
+      datasets = [
+        Widgets::Dataset.new(name: styled_name, data: [[0.0, 0.0], [10.0, 10.0]], marker: :dot),
+      ]
+
+      chart = Widgets::Chart.new(
+        datasets:,
+        x_axis: Widgets::Axis.new(bounds: [0.0, 10.0]),
+        y_axis: Widgets::Axis.new(bounds: [0.0, 10.0])
+      )
+
+      with_test_terminal(40, 10) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        content = buffer_content.join("\n")
+
+        # Should render the styled dataset name, not inspect string
+        assert_includes content, "StyledDS", "Styled dataset name should appear in output"
+        refute_includes content, "#<data", "Inspect string should not appear"
+
+        # Verify styling (green = ANSI 32)
+        ansi_output = render_rich_buffer
+        assert_includes ansi_output, "\e[32m", "Dataset name should have green foreground"
+      end
     end
   end
 end

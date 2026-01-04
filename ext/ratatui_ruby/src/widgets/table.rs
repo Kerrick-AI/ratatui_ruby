@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use crate::style::{parse_block, parse_style};
-use crate::text::{parse_line, parse_span};
+use crate::text::{parse_line, parse_span, parse_text};
 use crate::widgets::table_state::RubyTableState;
 use bumpalo::Bump;
 use magnus::{prelude::*, Error, Symbol, TryConvert, Value};
@@ -87,8 +87,12 @@ pub fn render(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Error> {
     }
 
     if !highlight_symbol_val.is_nil() {
-        let symbol: String = highlight_symbol_val.funcall("to_s", ())?;
-        table = table.highlight_symbol(symbol);
+        if let Ok(text) = parse_text(highlight_symbol_val) {
+            table = table.highlight_symbol(ratatui::text::Text::from(text));
+        } else {
+            let symbol: String = highlight_symbol_val.funcall("to_s", ())?;
+            table = table.highlight_symbol(symbol);
+        }
     }
 
     let style_val: Value = node.funcall("style", ())?;
@@ -207,8 +211,12 @@ pub fn render_stateful(
         table = table.cell_highlight_style(parse_style(cell_highlight_style_val)?);
     }
     if !highlight_symbol_val.is_nil() {
-        let symbol: String = highlight_symbol_val.funcall("to_s", ())?;
-        table = table.highlight_symbol(symbol);
+        if let Ok(text) = parse_text(highlight_symbol_val) {
+            table = table.highlight_symbol(ratatui::text::Text::from(text));
+        } else {
+            let symbol: String = highlight_symbol_val.funcall("to_s", ())?;
+            table = table.highlight_symbol(symbol);
+        }
     }
     if !style_val.is_nil() {
         table = table.style(parse_style(style_val)?);
