@@ -286,6 +286,19 @@ class TestTestHelperModule < Minitest::Test
     end
   end
 
+  def test_assert_plain_snapshot_is_alias
+    with_test_terminal(20, 2) do
+      # Verify that assert_plain_snapshot works the same as assert_snapshot
+      # by testing it against the same fixture
+      expected = ["Snapshot Content"]
+
+      stub :buffer_content, expected do
+        # This should look for test/snapshots/my_snapshot.txt (same as assert_snapshot)
+        assert_plain_snapshot("my_snapshot")
+      end
+    end
+  end
+
   def test_assert_snapshots_calls_both
     with_test_terminal(20, 2) do
       # Use a mock to verify both methods are called with correct arguments

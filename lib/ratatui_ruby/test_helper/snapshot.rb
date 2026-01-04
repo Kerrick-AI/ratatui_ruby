@@ -74,7 +74,12 @@ module RatatuiRuby
       # relative to the test file calling this method. It assumes a "snapshots" directory
       # exists in the same directory as the test file.
       #
-      # You probably want to use +assert_rich_snapshot+ instead. (TODO: explain why)
+      # TUIs communicate meaning through colors and styles. Plain text snapshots capture layout
+      # but miss styling bugs: wrong colors, missing bold, invisible text on a matching background.
+      # Use +assert_rich_snapshot+ to catch these regressions. Reserve this method for cases where
+      # you only care about text content, not appearance.
+      #
+      # *Prefer +assert_rich_snapshot+* unless you have a specific reason to ignore styling.
       #
       #   # In test/test_login.rb
       #   assert_snapshot("login_screen")
@@ -95,7 +100,7 @@ module RatatuiRuby
 
         assert_screen_matches(snapshot_path, msg, &)
       end
-      # TODO: alias assert_plain_snapshot
+      alias assert_plain_snapshot assert_snapshot
 
       ##
       # Asserts that the current screen content matches the expected content.
