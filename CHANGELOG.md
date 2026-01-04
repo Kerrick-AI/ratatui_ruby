@@ -12,6 +12,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.7.3] - 2026-01-04
+
+### Added
+
 - **Symbol Shortcuts for `bar_set`**: `Sparkline` and `BarChart` now accept `:nine_levels` (full 9-character gradient) and `:three_levels` (simplified empty/half/full) as intuitive shortcuts instead of requiring custom character hashes.
 - **`:half_block` Marker**: `Chart` `Dataset` now supports `:half_block` marker for higher resolution rendering using ▀ and ▄ characters.
 - **`assert_snapshots` Method**: `RatatuiRuby::TestHelper#assert_snapshots` (plural) calls both `assert_plain_snapshot` and `assert_rich_snapshot` with the same name, generating both `.txt` and `.ansi` files for documentation and display purposes.
@@ -398,6 +408,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Testing Support**: Included `RatatuiRuby::TestHelper` and RSpec integration to make testing your TUI applications possible.
 
 [Unreleased]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/HEAD
+[0.7.3]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.3
 [0.7.2]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.2
 [0.7.1]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.1
 [0.7.0]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.0
