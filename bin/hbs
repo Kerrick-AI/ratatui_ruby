@@ -55,6 +55,7 @@
 
 require "optparse"
 require "open3"
+require "rdoc"
 
 Commit = Data.define(:short_sha) do
   def self.head
@@ -90,13 +91,29 @@ Build = Data.define(:id, :status) do
     status == "FAILED"
   end
 
-  def show
-    system("hut", "builds", "show", id.to_s)
+  def url
+    "https://builds.sr.ht/~kerrick/job/#{id}"
+  end
+
+  def output
+    out, = Open3.capture2("hut", "builds", "show", id.to_s)
+    out
+  end
+
+  def content_lines
+    # Skip the URL line (first line) since it becomes the title
+    output.lines.drop(1).map(&:rstrip)
+  end
+
+  def last_timestamp
+    # Extract the latest timestamp from the runtime log (format: YYYY/MM/DD HH:MM:SS)
+    timestamps = output.scan(%r{\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}})
+    timestamps.last
   end
 
   def refresh
-    output, = Open3.capture2("hut", "builds", "show", id.to_s)
-    new_status = output.lines.first(3).join.match(/RUNNING|SUCCESS|FAILED|PENDING|QUEUED/)&.[](0) || status
+    out, = Open3.capture2("hut", "builds", "show", id.to_s)
+    new_status = out.lines.first(3).join.match(/RUNNING|SUCCESS|FAILED|PENDING|QUEUED/)&.[](0) || status
     Build.new(id:, status: new_status)
   end
 end
@@ -136,6 +153,25 @@ BuildSet = Data.define(:builds) do
     new(builds:)
   end
 
+  def self.with_status(target_status, count = 4)
+    output, = Open3.capture2("hut", "builds", "list")
+    all_ids = output.lines
+      .filter_map { |l| l[/#(\d+)/, 1]&.to_i }
+      .uniq
+
+    # Group builds into sets of `count` and find the first set with any matching status
+    all_ids.each_slice(count) do |set_ids|
+      builds = set_ids.map { |id| Build.new(id:, status: fetch_status(id)) }
+      has_match = case target_status
+                  when "FAILED" then builds.any?(&:failed?)
+                  when "SUCCESS" then builds.none?(&:failed?)
+      end
+      return new(builds:) if has_match
+    end
+
+    new(builds: [])
+  end
+
   def self.fetch_status(id)
     output, = Open3.capture2("hut", "builds", "show", id.to_s)
     output.lines.first(3).join.match(/RUNNING|SUCCESS|FAILED|PENDING|QUEUED/)&.[](0) || "UNKNOWN"
@@ -153,11 +189,12 @@ BuildSet = Data.define(:builds) do
     builds.any?(&:failed?)
   end
 
-  def show_all
-    builds.each_with_index do |build, idx|
-      puts "#" * 80 if idx.positive?
-      build.show
-    end
+  def commit_sha
+    # Extract commit SHA from the first build's output - this is the canonical source
+    return nil if builds.empty?
+
+    sha_match = builds.first.output.match(/\[([a-f0-9]{7})\]\[0\]/)
+    sha_match&.[](1)
   end
 
   def refresh
@@ -181,9 +218,9 @@ class BuildWatch
     @no_say = no_say
   end
 
-  private def box(*lines, style: :info)
+  private def box(*lines, style: :info, title: nil)
     width = 78
-    inner_width = width - 4 # "│ " + content + " │"
+    inner_width = width - 4 # "║ " + content + " ║"
 
     color = case style
             when :success then "\e[32m"
@@ -192,7 +229,14 @@ class BuildWatch
     end
     reset = "\e[0m"
 
-    top_border = "#{color}╔#{'═' * (width - 2)}╗#{reset}"
+    top_border = if title
+      title_text = " #{title} "
+      left_pad = (width - 2 - title_text.length) / 2
+      right_pad = width - 2 - title_text.length - left_pad
+      "#{color}╔#{'═' * left_pad}#{title_text}#{'═' * right_pad}╗#{reset}"
+    else
+      "#{color}╔#{'═' * (width - 2)}╗#{reset}"
+    end
     bottom_border = "#{color}╚#{'═' * (width - 2)}╝#{reset}"
 
     puts top_border
@@ -204,47 +248,123 @@ class BuildWatch
     puts bottom_border
   end
 
-  private def result_box(message, style:)
+  private def single_box(*lines, title: nil)
+    width = 78
+    inner_width = width - 4 # "│ " + content + " │"
+
+    gray = "\e[90m"
+    reset = "\e[0m"
+
+    top_border = if title
+      title_text = " #{title} "
+      left_pad = (width - 2 - title_text.length) / 2
+      right_pad = width - 2 - title_text.length - left_pad
+      "#{gray}┌#{'─' * left_pad}#{title_text}#{'─' * right_pad}┐#{reset}"
+    else
+      "#{gray}┌#{'─' * (width - 2)}┐#{reset}"
+    end
+    bottom_border = "#{gray}└#{'─' * (width - 2)}┘#{reset}"
+
+    puts top_border
+    lines.each do |line|
+      wrap_text(line, inner_width).each do |wrapped|
+        if wrapped.length > inner_width
+          # Line is too long even after wrapping (e.g., a URL that can't be broken).
+          # Let it "blow out" the right wall rather than truncating or wrapping mid-word.
+          puts "#{gray}│#{reset} #{wrapped}"
+        else
+          puts "#{gray}│#{reset} #{wrapped.ljust(inner_width)} #{gray}│#{reset}"
+        end
+      end
+    end
+    puts bottom_border
+  end
+
+  private def result_box(message, style:, sha: nil)
     width = 78
     inner_width = width - 4
     symbol = (style == :success) ? "✓" : "✗"
     flanks = "#{symbol} #{symbol} #{symbol}"
 
+    # Include commit SHA if provided
+    full_message = sha ? "#{message} (#{sha})" : message
+
     # Calculate padding: inner_width - 2*flanks - message - spaces around message
-    available = inner_width - (flanks.length * 2) - message.length
+    available = inner_width - (flanks.length * 2) - full_message.length
     left_pad = available / 2
     right_pad = available - left_pad
 
-    centered = "#{flanks}#{' ' * left_pad}#{message}#{' ' * right_pad}#{flanks}"
+    centered = "#{flanks}#{' ' * left_pad}#{full_message}#{' ' * right_pad}#{flanks}"
     box(centered, style:)
   end
 
   private def wrap_text(text, width)
     return [text] if text.length <= width
 
-    words = text.split
-    lines = []
-    current = ""
-    words.each do |word|
-      if current.empty?
-        current = word
-      elsif (current.length + 1 + word.length) <= width
-        current += " #{word}"
-      else
-        lines << current
-        current = word
-      end
-    end
-    lines << current unless current.empty?
-    lines
+    # Use RDoc::Text#wrap which handles URLs better
+    wrapper = Object.new.extend(RDoc::Text)
+    wrapper.wrap(text, width).lines.map(&:chomp)
   end
 
-  private def separator
-    puts "\e[36m#{'─' * 80}\e[0m"
+  private def show_builds(build_set)
+    if build_set.any_failed?
+      # Announce failure immediately - don't wait for all build details to be fetched
+      say("Builds have Failed")
+
+      # Failed builds: raw output with red full-block separators
+      red = "\e[31m"
+      reset = "\e[0m"
+      block_line = "#{red}#{'█' * 80}#{reset}"
+
+      build_set.builds.each_with_index do |build, idx|
+        if idx.positive?
+          # Show separator with build info for easy scanning
+          next_build = build_set.builds[idx]
+          ts = next_build.last_timestamp
+          label = ts ? "##{next_build.id} — #{ts} — #{next_build.status}" : "##{next_build.id} — #{next_build.status}"
+          # Down-arrows indicate this labels the NEXT build below; inset by 1 to avoid edge rendering issues
+          centered = " ↓#{label.center(76)}↓ "
+
+          puts
+          puts block_line
+          puts "#{red}#{centered}#{reset}"
+          puts block_line
+          puts
+        end
+        system("hut", "builds", "show", build.id.to_s)
+      end
+    else
+      # Normal builds: gray single-boxes with URL titles
+      build_set.builds.each do |build|
+        single_box(*build.content_lines, title: build.url)
+      end
+    end
   end
 
   def run
     check_dependencies!
+
+    # Debug mode: find builds by status instead of commit
+    if (force_status = ENV["HBS_FORCE"])
+      target = case force_status.upcase
+               when "PASSED" then "SUCCESS"
+               when "FAILED" then "FAILED"
+               else
+                 warn "HBS_FORCE must be 'PASSED' or 'FAILED'"
+                 exit 1
+      end
+
+      box("HBS_FORCE=#{force_status}: Finding #{@build_count} #{target} builds...")
+      build_set = BuildSet.with_status(target, @build_count)
+      if build_set.empty?
+        box("No #{target} builds found", style: :error)
+        exit 1
+      end
+      box("Found builds: #{build_set.ids.join(', ')}")
+      report(build_set)
+      return
+    end
+
     commit = Commit.head
     system("git", "fetch", "--quiet", out: File::NULL, err: File::NULL)
     origin = Commit.origin_head
@@ -327,15 +447,16 @@ class BuildWatch
     watch(build_set) if build_set.any_running?
 
     final_set = build_set.refresh
-    separator
-    final_set.show_all
+    show_builds(final_set)
     puts
+
+    sha = final_set.commit_sha
     if final_set.any_failed?
-      say("Builds have Failed")
-      result_box("BUILDS FAILED", style: :error)
+      # say() already called in show_builds when failure first detected
+      result_box("BUILDS FAILED", style: :error, sha:)
     else
       say("Builds have Passed")
-      result_box("BUILDS PASSED", style: :success)
+      result_box("BUILDS PASSED", style: :success, sha:)
     end
 
     # Recheck if HEAD is now pushed (user may have pushed while watching)
@@ -350,31 +471,31 @@ class BuildWatch
 
   private def watch(build_set)
     say("Watching Builds")
-    separator
-    build_set.show_all
+    show_builds(build_set)
 
     current = build_set
     while current.any_running?
       sleep POLL_INTERVAL
-      separator
       current = current.refresh
-      current.show_all
+      show_builds(current)
     end
   end
 
   private def report(build_set)
     puts
-    separator
-    build_set.show_all
+    show_builds(build_set)
     puts
 
+    # Extract commit SHA from build output - this is the canonical source
+    sha = build_set.commit_sha
+
     if build_set.any_failed?
-      say("Builds have Failed")
-      result_box("BUILDS FAILED", style: :error)
+      # say() already called in show_builds when failure first detected
+      result_box("BUILDS FAILED", style: :error, sha:)
       exit 1
     else
       say("Builds have Passed")
-      result_box("BUILDS PASSED", style: :success)
+      result_box("BUILDS PASSED", style: :success, sha:)
       exit 0
     end
   end
@@ -382,7 +503,9 @@ class BuildWatch
   private def say(message)
     return if @no_say
 
-    system("say", message)
+    # Fire async so script doesn't block waiting for speech
+    pid = spawn("say", message, out: File::NULL, err: File::NULL)
+    Process.detach(pid)
   end
 end
 
