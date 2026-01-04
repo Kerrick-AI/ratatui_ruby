@@ -12,6 +12,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.7.2] - 2026-01-04
+
+### Added
+
 - **Tabs `padding_left` and `padding_right`**: Now accept `Integer` (for spaces), `String`, or `Text::Line` for styled padding content. Previously only accepted `Integer`. Passing a `Line` object allows colored or decorated padding.
 
 ### Changed
@@ -378,6 +388,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Testing Support**: Included `RatatuiRuby::TestHelper` and RSpec integration to make testing your TUI applications possible.
 
 [Unreleased]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/HEAD
+[0.7.2]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.2
 [0.7.1]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.1
 [0.7.0]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.0
 [0.6.0]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.6.0
