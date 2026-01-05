@@ -12,6 +12,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.7.4] - 2026-01-05
+
+### Added
+
 - **Block Inner Area Calculation**: `Block#inner(area)` method computes the inner content area given an outer `Rect`, accounting for borders and padding. Essential for layout calculations when you need to know usable space inside a block.
 - **Deferred Warnings During TUI Sessions**: Experimental feature warnings (like `Paragraph#line_count`) are now automatically queued during active TUI sessions and flushed to stderr after `restore_terminal`. This prevents warnings from corrupting the TUI display. See `doc/troubleshooting/tui_output.md` for details on handling terminal output during TUI sessions.
 - **Session State Tracking**: `RatatuiRuby.terminal_active?` indicates whether a TUI session is active. Calling `init_terminal` or `init_test_terminal` while a session is already active now raises `Error::Invariant`.
@@ -415,6 +425,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Testing Support**: Included `RatatuiRuby::TestHelper` and RSpec integration to make testing your TUI applications possible.
 
 [Unreleased]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/HEAD
+[0.7.4]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.4
 [0.7.3]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.3
 [0.7.2]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.2
 [0.7.1]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.1
