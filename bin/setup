@@ -1,18 +1,33 @@
 #!/usr/bin/env bash
-# SPDX-FileCopyrightText: 2025 Kerrick Long <me@kerricklong.com>
+# SPDX-FileCopyrightText: 2026 Kerrick Long <me@kerricklong.com>
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 set -euo pipefail
 IFS=$'\n\t'
 set -vx
 
-if command -v mise >/dev/null 2>&1; then
-  mise install
-  mise x -- pip install reuse
-  mise x -- bundle install
-  pre-commit install
-  bundle exec rake rdoc
-else
+# 1. Check for mise
+if ! command -v mise >/dev/null 2>&1; then
   echo "mise isn't installed. Please install it to continue." >&2
   exit 1
 fi
+
+# 2. Install languages defined in mise.toml/.tool-versions
+mise install
+
+# 3. Install Python tools (including pre-commit if not in mise.toml)
+# We use 'mise x --' to ensure we use the python version defined in the project
+mise x -- pip install --upgrade pip
+mise x -- pip install reuse pre-commit
+
+# 4. Install Ruby Dependencies
+mise x -- bundle install
+
+# 5. Setup Hooks
+# We use 'mise x --' to ensure we are running the version of pre-commit we just installed
+mise x -- pre-commit install
+
+# 6. Project Setup
+mise x -- bundle exec rake rdoc
+
+echo "Setup complete!"
