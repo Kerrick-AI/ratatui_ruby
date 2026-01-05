@@ -33,7 +33,6 @@ class TestStatefulRendering < Minitest::Test
 
   # Gap test - ListState#select_next from v1.0.0_blockers.md
   def test_list_state_select_next
-    skip "v1.0.0 Blocker: ListState#select_next not implemented. See doc/contributors/v1.0.0_blockers.md"
     state = RatatuiRuby::ListState.new(nil)
     state.select(0)
     state.select_next
