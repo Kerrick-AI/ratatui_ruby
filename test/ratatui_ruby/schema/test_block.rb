@@ -358,4 +358,32 @@ class TestBlock < Minitest::Test
       assert_includes ansi_output, "\e[32m", "Block border_style should apply green foreground"
     end
   end
+
+  def test_raw_span_as_title_content_renders_content_not_inspect_string
+    skip "v1.0.0 Blocker: Block title Span→Line auto-coercion gap. See doc/contributors/v1.0.0_blockers.md"
+
+    # This test verifies that a raw Span object (not wrapped in Line) can be used
+    # as title content. This is the Span→Line auto-coercion gap documented in blockers.
+    with_test_terminal(30, 3) do
+      styled_span = RatatuiRuby::Text::Span.new(
+        content: "SpanTitle",
+        style: RatatuiRuby::Style::Style.new(fg: :magenta)
+      )
+      b = RatatuiRuby::Widgets::Block.new(
+        borders: [:all],
+        titles: [{ content: styled_span }]
+      )
+      RatatuiRuby.draw { |f| f.render_widget(b, f.area) }
+      line = buffer_content[0]
+
+      # The styled Span should render as "SpanTitle" not as "#<data RatatuiRuby::Text::Span..."
+      assert_includes line, "SpanTitle", "Styled Span content should appear in output"
+      refute_includes line, "#<data", "Inspect string should not appear in output"
+      refute_includes line, "Span", "Class name should not appear in output"
+
+      # Verify the styling is actually applied (magenta = ANSI 35)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[35m", "Title should have magenta foreground"
+    end
+  end
 end

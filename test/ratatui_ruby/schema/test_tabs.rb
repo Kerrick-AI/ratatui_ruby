@@ -193,4 +193,28 @@ class TestTabs < Minitest::Test
       assert_includes ansi_output, "\e[31m", "Highlight style should apply red foreground"
     end
   end
+
+  def test_styled_title_renders_content_not_inspect_string
+    styled_title = RatatuiRuby::Text::Line.new(
+      spans: [RatatuiRuby::Text::Span.new(content: "StyledTab", style: RatatuiRuby::Style::Style.new(fg: :green))]
+    )
+
+    with_test_terminal(25, 1) do
+      tabs = RatatuiRuby::Widgets::Tabs.new(
+        titles: [styled_title, "Plain"],
+        selected_index: 0
+      )
+      RatatuiRuby.draw { |f| f.render_widget(tabs, f.area) }
+      line = buffer_content[0]
+
+      # The title should render as "StyledTab" not as "#<data RatatuiRuby::Text::Line..."
+      assert_includes line, "StyledTab", "Styled title content should appear in output"
+      refute_includes line, "#<data", "Inspect string should not appear in output"
+      refute_includes line, "Line", "Class name should not appear in output"
+
+      # Verify the styling is actually applied (green = ANSI code 32)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[32m", "Title should have green foreground"
+    end
+  end
 end

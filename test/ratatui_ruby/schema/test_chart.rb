@@ -177,6 +177,41 @@ module RatatuiRuby
       end
     end
 
+    def test_styled_axis_labels_renders_content_not_inspect_string
+      styled_label_0 = Text::Line.new(
+        spans: [Text::Span.new(content: "Start", style: Style::Style.new(fg: :yellow))]
+      )
+      styled_label_10 = Text::Line.new(
+        spans: [Text::Span.new(content: "End", style: Style::Style.new(fg: :cyan))]
+      )
+
+      datasets = [
+        Widgets::Dataset.new(name: "DS1", data: [[0.0, 0.0], [10.0, 10.0]], marker: :dot),
+      ]
+
+      chart = Widgets::Chart.new(
+        datasets:,
+        x_axis: Widgets::Axis.new(bounds: [0.0, 10.0], labels: [styled_label_0, styled_label_10]),
+        y_axis: Widgets::Axis.new(bounds: [0.0, 10.0])
+      )
+
+      with_test_terminal(40, 10) do
+        RatatuiRuby.draw { |f| f.render_widget(chart, f.area) }
+        content = buffer_content.join("\n")
+
+        # The labels should render as "Start" and "End" not as "#<data RatatuiRuby::Text::Line..."
+        assert_includes content, "Start", "Styled label content should appear in output"
+        assert_includes content, "End", "Styled label content should appear in output"
+        refute_includes content, "#<data", "Inspect string should not appear in output"
+        refute_includes content, "Line", "Class name should not appear in output"
+
+        # Verify the styling is actually applied (yellow = ANSI 33, cyan = ANSI 36)
+        ansi_output = render_rich_buffer
+        assert_includes ansi_output, "\e[33m", "First label should have yellow foreground"
+        assert_includes ansi_output, "\e[36m", "Second label should have cyan foreground"
+      end
+    end
+
     private def chart_with_legend_position(position)
       Widgets::Chart.new(
         datasets: [Widgets::Dataset.new(name: "DS", data: [[0.0, 0.0], [10.0, 10.0]], marker: :dot)],

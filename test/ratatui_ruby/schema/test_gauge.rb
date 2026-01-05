@@ -64,6 +64,28 @@ class TestGauge < Minitest::Test
       assert_includes ansi_output, "\e[42m", "Gauge gauge_style should apply green background"
     end
   end
+
+  def test_styled_label_renders_content_not_inspect_string
+    styled_label = RatatuiRuby::Text::Span.new(
+      content: "StyledLabel",
+      style: RatatuiRuby::Style::Style.new(fg: :cyan)
+    )
+
+    with_test_terminal(25, 1) do
+      g = RatatuiRuby::Widgets::Gauge.new(ratio: 0.5, label: styled_label)
+      RatatuiRuby.draw { |f| f.render_widget(g, f.area) }
+      line = buffer_content[0]
+
+      # The label should render as "StyledLabel" not as "#<data RatatuiRuby::Text::Span..."
+      assert_includes line, "StyledLabel", "Styled label content should appear in output"
+      refute_includes line, "#<data", "Inspect string should not appear in output"
+      refute_includes line, "Span", "Class name should not appear in output"
+
+      # Verify the styling is actually applied (cyan = ANSI code 36)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[36m", "Label should have cyan foreground"
+    end
+  end
 end
 
 class TestLineGauge < Minitest::Test
@@ -108,6 +130,28 @@ class TestLineGauge < Minitest::Test
       ansi_output = render_rich_buffer
       # Red foreground = ANSI 31
       assert_includes ansi_output, "\e[31m", "LineGauge unfilled_style should apply red foreground"
+    end
+  end
+
+  def test_styled_label_renders_content_not_inspect_string
+    styled_label = RatatuiRuby::Text::Span.new(
+      content: "StyledLG",
+      style: RatatuiRuby::Style::Style.new(fg: :magenta)
+    )
+
+    with_test_terminal(25, 1) do
+      lg = RatatuiRuby::Widgets::LineGauge.new(ratio: 0.5, label: styled_label)
+      RatatuiRuby.draw { |f| f.render_widget(lg, f.area) }
+      line = buffer_content[0]
+
+      # The label should render as "StyledLG" not as "#<data RatatuiRuby::Text::Span..."
+      assert_includes line, "StyledLG", "Styled label content should appear in output"
+      refute_includes line, "#<data", "Inspect string should not appear in output"
+      refute_includes line, "Span", "Class name should not appear in output"
+
+      # Verify the styling is actually applied (magenta = ANSI code 35)
+      ansi_output = render_rich_buffer
+      assert_includes ansi_output, "\e[35m", "Label should have magenta foreground"
     end
   end
 end
