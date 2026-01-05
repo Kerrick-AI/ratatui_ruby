@@ -436,9 +436,13 @@ class AnnounceTUI
   private def render_tabs(frame, area)
     email_client = use_emate? ? "emate" : "mailto"
 
-    # Dry-run indicator: gray when "no", bright bold white when "yes"
-    dry_run_style = CLIFlags.dry_run.value ? @tui.style(fg: :white, modifiers: [:bold]) : @border_style
-    dry_run_title = @tui.text_span(content: "dry-run: #{CLIFlags.dry_run.to_short}", style: dry_run_style)
+    # # Dry-run indicator: gray when "no", bright bold white when "yes"
+    # dry_run_style = CLIFlags.dry_run.value ? @tui.style(fg: :white, modifiers: [:bold]) : @border_style
+    # dry_run_title = @tui.text_line(
+    #   @tui.paragraph(content: "dry-run: #{CLIFlags.dry_run.to_short}",
+    #              style: dry_run_style)
+    # )
+    dry_run_title = nil
 
     tabs = @tui.tabs(
       titles: TABS,
