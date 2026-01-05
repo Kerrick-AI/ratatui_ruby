@@ -11,6 +11,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.8.0] - 2026-01-05
+
+### Added
 - **Output Guard**: `RatatuiRuby.guard_io { }` temporarily replaces `$stdout` and `$stderr` with a null sink, preventing screen corruption from chatty gems. Active when `terminal_active?` is true; warns if called outside a session (to catch mistakes); silent no-op in headless mode.
 - **Headless Mode**: `RatatuiRuby.headless!` enables batch/CLI mode for apps with `--no-tui` flags. When headless, `guard_io` becomes a silent no-op and `init_terminal`/`run` raise `Error::Invariant`. This allows the same code to work in both TUI and non-TUI modes.
 - **Terminal Safety Hooks**: `at_exit` and `Signal.trap` handlers for `INT` and `TERM` automatically restore the terminal if a session is active on unexpected exit. This prevents leaving the terminal in raw mode after Ctrl+C or process termination.
@@ -431,6 +441,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Testing Support**: Included `RatatuiRuby::TestHelper` and RSpec integration to make testing your TUI applications possible.
 
 [Unreleased]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/HEAD
+[0.8.0]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.8.0
 [0.7.4]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.4
 [0.7.3]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.3
 [0.7.2]: https://git.sr.ht/~kerrick/ratatui_ruby/refs/v0.7.2
