@@ -189,6 +189,48 @@ module RatatuiRuby
           children:
         )
       end
+
+      # Computes the inner content area given an outer area.
+      #
+      # This method calculates where content should be placed within a block,
+      # accounting for borders and padding. Essential for layout calculations
+      # when you need to know the usable space inside a block.
+      #
+      # === Example
+      #
+      #   block = Block.new(borders: [:all], padding: 1)
+      #   outer = Layout::Rect.new(x: 0, y: 0, width: 20, height: 10)
+      #   inner = block.inner(outer)
+      #   # => Rect(x: 2, y: 2, width: 16, height: 6)
+      #
+      # [area]
+      #   The outer Rect to compute the inner area for.
+      #
+      # Returns a new Rect representing the inner content area.
+      def inner(area)
+        # Calculate border offsets
+        has_border = -> (side) { borders.include?(:all) || borders.include?(side) }
+        left_border = has_border.call(:left) ? 1 : 0
+        right_border = has_border.call(:right) ? 1 : 0
+        top_border = has_border.call(:top) ? 1 : 0
+        bottom_border = has_border.call(:bottom) ? 1 : 0
+
+        # Calculate padding offsets
+        if padding.is_a?(Array)
+          # [left, right, top, bottom]
+          pad_left, pad_right, pad_top, pad_bottom = padding
+        else
+          pad_left = pad_right = pad_top = pad_bottom = padding
+        end
+
+        # Compute inner area
+        new_x = area.x + left_border + pad_left
+        new_y = area.y + top_border + pad_top
+        new_width = [area.width - left_border - right_border - pad_left - pad_right, 0].max
+        new_height = [area.height - top_border - bottom_border - pad_top - pad_bottom, 0].max
+
+        Layout::Rect.new(x: new_x, y: new_y, width: new_width, height: new_height)
+      end
     end
   end
 end
