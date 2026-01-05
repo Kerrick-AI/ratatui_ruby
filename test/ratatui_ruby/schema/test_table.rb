@@ -612,4 +612,12 @@ class TestTable < Minitest::Test
       assert_includes ansi_output, "\e[43m", "Table row_highlight_style should apply yellow background"
     end
   end
+
+  # Gap test - verify Row#enable_strikethrough from v1.0.0_blockers.md
+  def test_row_enable_strikethrough
+    skip "v1.0.0 Blocker: Row#enable_strikethrough not implemented. See doc/contributors/v1.0.0_blockers.md"
+    row = RatatuiRuby::Widgets::Row.new(cells: ["Test"])
+    strikethrough_row = row.enable_strikethrough
+    refute_nil strikethrough_row
+  end
 end

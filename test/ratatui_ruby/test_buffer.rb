@@ -65,4 +65,40 @@ class TestDraw < Minitest::Test
       assert_equal " ", RatatuiRuby.get_cell_at(9, 4).char # Unaffected
     end
   end
+
+  # Gap tests - verify Buffer query methods from v1.0.0_blockers.md
+  def test_buffer_content
+    skip "v1.0.0 Blocker: Buffer#content not implemented. See doc/contributors/v1.0.0_blockers.md"
+    with_test_terminal(10, 5) do
+      RatatuiRuby.draw { |f| f.render_widget(RatatuiRuby::Widgets::Paragraph.new(text: "Hi"), f.area) }
+      cells = RatatuiRuby::Buffer.content
+      refute_nil cells
+    end
+  end
+
+  def test_buffer_get
+    skip "v1.0.0 Blocker: Buffer#get not implemented. See doc/contributors/v1.0.0_blockers.md"
+    with_test_terminal(10, 5) do
+      RatatuiRuby.draw { |f| f.render_widget(RatatuiRuby::Widgets::Paragraph.new(text: "Hi"), f.area) }
+      cell = RatatuiRuby::Buffer.get(0, 0)
+      assert_equal "H", cell.char
+    end
+  end
+
+  def test_buffer_index_of
+    skip "v1.0.0 Blocker: Buffer#index_of not implemented. See doc/contributors/v1.0.0_blockers.md"
+    with_test_terminal(10, 5) do
+      index = RatatuiRuby::Buffer.index_of(5, 2)
+      assert_equal 25, index # 2 * 10 + 5
+    end
+  end
+
+  def test_buffer_pos_of
+    skip "v1.0.0 Blocker: Buffer#pos_of not implemented. See doc/contributors/v1.0.0_blockers.md"
+    with_test_terminal(10, 5) do
+      x, y = RatatuiRuby::Buffer.pos_of(25)
+      assert_equal 5, x
+      assert_equal 2, y
+    end
+  end
 end

@@ -31,6 +31,43 @@ class TestStatefulRendering < Minitest::Test
     assert_nil state.selected
   end
 
+  # Gap test - ListState#select_next from v1.0.0_blockers.md
+  def test_list_state_select_next
+    skip "v1.0.0 Blocker: ListState#select_next not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::ListState.new(nil)
+    state.select(0)
+    state.select_next
+    assert_equal 1, state.selected
+  end
+
+  # Gap test - ListState#select_previous from v1.0.0_blockers.md
+  def test_list_state_select_previous
+    skip "v1.0.0 Blocker: ListState#select_previous not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::ListState.new(nil)
+    state.select(5)
+    state.select_previous
+    assert_equal 4, state.selected
+  end
+
+  # Gap test - ListState#select_first from v1.0.0_blockers.md
+  def test_list_state_select_first
+    skip "v1.0.0 Blocker: ListState#select_first not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::ListState.new(nil)
+    state.select(5)
+    state.select_first
+    assert_equal 0, state.selected
+  end
+
+  # Gap test - ListState#select_last from v1.0.0_blockers.md
+  def test_list_state_select_last
+    skip "v1.0.0 Blocker: ListState#select_last not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::ListState.new(nil)
+    state.select(0)
+    state.select_last
+    # Note: select_last requires knowing total items count
+    refute_nil state.selected
+  end
+
   # === TableState Tests ===
 
   def test_table_state_initialization_default
@@ -51,6 +88,61 @@ class TestStatefulRendering < Minitest::Test
     assert_equal 1, state.selected_column
     state.select_column(nil)
     assert_nil state.selected_column
+  end
+
+  # Gap test - TableState#selected_cell from v1.0.0_blockers.md
+  def test_table_state_selected_cell
+    skip "v1.0.0 Blocker: TableState#selected_cell not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::TableState.new(nil)
+    state.select(2)
+    state.select_column(3)
+    cell = state.selected_cell
+    assert_equal [2, 3], cell
+  end
+
+  # Gap test - TableState#select_next_column from v1.0.0_blockers.md
+  def test_table_state_select_next_column
+    skip "v1.0.0 Blocker: TableState#select_next_column not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::TableState.new(nil)
+    state.select_column(0)
+    state.select_next_column
+    assert_equal 1, state.selected_column
+  end
+
+  # Gap test - TableState#select_previous_column from v1.0.0_blockers.md
+  def test_table_state_select_previous_column
+    skip "v1.0.0 Blocker: TableState#select_previous_column not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::TableState.new(nil)
+    state.select_column(5)
+    state.select_previous_column
+    assert_equal 4, state.selected_column
+  end
+
+  # Gap test - TableState#select_first_column from v1.0.0_blockers.md
+  def test_table_state_select_first_column
+    skip "v1.0.0 Blocker: TableState#select_first_column not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::TableState.new(nil)
+    state.select_column(5)
+    state.select_first_column
+    assert_equal 0, state.selected_column
+  end
+
+  # Gap test - TableState#select_last_column from v1.0.0_blockers.md
+  def test_table_state_select_last_column
+    skip "v1.0.0 Blocker: TableState#select_last_column not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::TableState.new(nil)
+    state.select_column(0)
+    state.select_last_column
+    # select_last_column needs to know column count
+    refute_nil state.selected_column
+  end
+
+  # Gap test - TableState with_selected_cell from v1.0.0_blockers.md
+  def test_table_state_with_selected_cell
+    skip "v1.0.0 Blocker: TableState.with_selected_cell not implemented. See doc/contributors/v1.0.0_blockers.md"
+    state = RatatuiRuby::TableState.with_selected_cell([2, 3])
+    assert_equal 2, state.selected
+    assert_equal 3, state.selected_column
   end
 
   # === ScrollbarState Tests ===

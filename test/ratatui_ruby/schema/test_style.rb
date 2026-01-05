@@ -59,4 +59,23 @@ class TestStyle < Minitest::Test
       assert_nil cell.bg, ":reset bg should render as nil (terminal default)"
     end
   end
+
+  # Gap tests - verify Color constructors from v1.0.0_blockers.md
+  def test_color_from_u32
+    skip "v1.0.0 Blocker: Color.from_u32 not implemented. See doc/contributors/v1.0.0_blockers.md"
+    color = RatatuiRuby::Style::Color.from_u32(0xFF0000) # Red
+    refute_nil color
+  end
+
+  def test_color_from_hsl
+    skip "v1.0.0 Blocker: Color.from_hsl not implemented. See doc/contributors/v1.0.0_blockers.md"
+    color = RatatuiRuby::Style::Color.from_hsl(0, 100, 50) # Red
+    refute_nil color
+  end
+
+  def test_color_from_hsluv
+    skip "v1.0.0 Blocker: Color.from_hsluv not implemented. See doc/contributors/v1.0.0_blockers.md"
+    color = RatatuiRuby::Style::Color.from_hsluv(0, 100, 50)
+    refute_nil color
+  end
 end

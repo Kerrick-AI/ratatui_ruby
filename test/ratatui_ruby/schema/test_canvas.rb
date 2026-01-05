@@ -81,4 +81,12 @@ class TestCanvas < Minitest::Test
     c = RatatuiRuby::Widgets::Canvas.new(marker: :half_block)
     assert_equal :half_block, c.marker
   end
+
+  # Gap test - verify Canvas#get_point from v1.0.0_blockers.md
+  def test_canvas_get_point
+    skip "v1.0.0 Blocker: Canvas#get_point not implemented. See doc/contributors/v1.0.0_blockers.md"
+    c = RatatuiRuby::Widgets::Canvas.new(x_bounds: [0.0, 100.0], y_bounds: [0.0, 100.0])
+    result = c.get_point(50.0, 50.0)
+    refute_nil result
+  end
 end

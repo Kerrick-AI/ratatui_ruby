@@ -276,4 +276,37 @@ class TestLayout < Minitest::Test
     # Remaining is allocated to Min(5) + others?
     # Total used: 10 + ~20 + 50 = 80.
   end
+
+  # Gap tests - verify missing parameters from v1.0.0_blockers.md
+  def test_layout_margin
+    skip "v1.0.0 Blocker: Layout margin not implemented. See doc/contributors/v1.0.0_blockers.md"
+    l = RatatuiRuby::Layout::Layout.new(
+      direction: :vertical,
+      margin: 2,
+      constraints: [RatatuiRuby::Layout::Constraint.fill(1)]
+    )
+    assert_equal 2, l.margin
+  end
+
+  def test_layout_spacing
+    skip "v1.0.0 Blocker: Layout spacing not implemented. See doc/contributors/v1.0.0_blockers.md"
+    l = RatatuiRuby::Layout::Layout.new(
+      direction: :vertical,
+      spacing: 1,
+      constraints: [RatatuiRuby::Layout::Constraint.fill(1), RatatuiRuby::Layout::Constraint.fill(1)]
+    )
+    assert_equal 1, l.spacing
+  end
+
+  def test_layout_split_with_spacers
+    skip "v1.0.0 Blocker: Layout.split_with_spacers not implemented. See doc/contributors/v1.0.0_blockers.md"
+    area = RatatuiRuby::Layout::Rect.new(x: 0, y: 0, width: 100, height: 10)
+    segments, spacers = RatatuiRuby::Layout::Layout.split_with_spacers(
+      area,
+      direction: :horizontal,
+      constraints: [RatatuiRuby::Layout::Constraint.length(20), RatatuiRuby::Layout::Constraint.length(20)]
+    )
+    refute_nil segments
+    refute_nil spacers
+  end
 end

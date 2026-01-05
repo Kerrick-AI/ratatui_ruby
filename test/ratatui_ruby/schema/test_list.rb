@@ -210,4 +210,19 @@ class TestList < Minitest::Test
       assert_includes ansi_output, "\e[43m", "List highlight_style should apply yellow background"
     end
   end
+
+  # Gap tests - verify missing methods from v1.0.0_blockers.md
+  def test_list_len
+    skip "v1.0.0 Blocker: List#len not implemented. See doc/contributors/v1.0.0_blockers.md"
+    list = RatatuiRuby::Widgets::List.new(items: ["a", "b", "c"])
+    assert_equal 3, list.len
+  end
+
+  def test_list_empty
+    skip "v1.0.0 Blocker: List#empty? not implemented. See doc/contributors/v1.0.0_blockers.md"
+    empty_list = RatatuiRuby::Widgets::List.new(items: [])
+    non_empty_list = RatatuiRuby::Widgets::List.new(items: ["a"])
+    assert empty_list.empty?
+    refute non_empty_list.empty?
+  end
 end
