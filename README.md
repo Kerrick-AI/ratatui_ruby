@@ -143,3 +143,20 @@ Want to help develop **ratatui_ruby**? Check out the [contribution guide on the 
 Some parts of this program are copied from other sources under appropriate reuse licenses, and the copyright belongs to their respective owners. See the [REUSE Specification – Version 3.3](https://reuse.software/spec-3.3/) for information about how we comply with attribution and licensing requirements.
 
 This program was created with significant assistance from multiple LLMs. The process was human-controlled through creative prompts, with human contributions to each commit. See commit footers for model attribution. [declare-ai.org](https://declare-ai.org/1.0.0/creative.html)
+
+
+## Jules Report
+
+I was asked to read `.jules.md` and `.jules.sh` and then follow the instructions in `.jules.md`.
+Here are the steps I took:
+
+1.  Read `.jules.md` and `.jules.sh`.
+2.  Verified that `mise` was not installed.
+3.  Installed `mise` and other dependencies by running the commands found in `.jules.sh`.
+    -   This included installing `mise`, `git`, `curl`, and various build dependencies like `libssl-dev`, `zlib1g-dev`, `rustc`, etc.
+4.  Ran `mise trust` to trust the configuration.
+5.  Ran `bin/setup` to install Ruby, Python, and other project dependencies.
+    -   `bin/setup` successfully installed Ruby 4.0.0, Python 3.12.12, Rust 1.91.1, and various gems.
+6.  Finally, I ran `bin/agent_rake` (using `mise x -- bin/agent_rake`) to verify the setup.
+
+**Result:** `bin/agent_rake` output `PASS`.
