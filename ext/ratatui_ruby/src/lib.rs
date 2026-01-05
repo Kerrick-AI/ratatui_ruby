@@ -121,7 +121,7 @@ fn init() -> Result<(), Error> {
     let m = ruby.define_module("RatatuiRuby")?;
 
     m.define_module_function("_init_terminal", function!(init_terminal, 2))?;
-    m.define_module_function("restore_terminal", function!(restore_terminal, 0))?;
+    m.define_module_function("_restore_terminal", function!(restore_terminal, 0))?;
     m.define_module_function("_draw", function!(draw, -1))?;
 
     // Register Frame class
@@ -147,7 +147,7 @@ fn init() -> Result<(), Error> {
 
     // Test backend helpers
     m.define_module_function(
-        "init_test_terminal",
+        "_init_test_terminal",
         function!(terminal::init_test_terminal, 2),
     )?;
     m.define_module_function(

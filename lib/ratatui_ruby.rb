@@ -42,13 +42,72 @@ end
 #
 # Use `RatatuiRuby.run` to start your application.
 module RatatuiRuby
-  # Generic error class for RatatuiRuby.
+  # Base error class for RatatuiRuby.
+  #
+  # All library-specific exceptions inherit from this class.
+  # Catch this to handle any RatatuiRuby error generically.
+  #
+  # === Example
+  #
+  #   begin
+  #     RatatuiRuby.run { |tui| ... }
+  #   rescue RatatuiRuby::Error => e
+  #     puts "RatatuiRuby error: #{e.message}"
+  #   end
   class Error < StandardError
-    # Raised when a terminal operation fails (e.g., I/O error, backend failure).
+    # Operational failure during terminal I/O.
+    #
+    # Terminals are finnicky. I/O can fail. Backends can crash.
+    # These are runtime problems outside your control.
+    #
+    # This error signals the terminal operation itself failed.
+    # The library tried to do something with the terminal and couldn't.
+    #
+    # Catch this to handle terminal failures gracefully.
+    #
+    # === Example
+    #
+    #   begin
+    #     RatatuiRuby.init_terminal
+    #   rescue RatatuiRuby::Error::Terminal => e
+    #     puts "Terminal failed: #{e.message}"
+    #   end
     class Terminal < Error; end
 
-    # Raised when an API safety contract is violated (e.g., accessing a Frame outside its valid scope).
+    # Object lifetime violation.
+    #
+    # Some objects are only valid during specific scopes.
+    # Using them after their scope ends causes undefined behavior.
+    #
+    # This error prevents use-after-scope bugs.
+    # The object you're accessing is no longer valid.
+    #
+    # To resolve, ensure scoped objects are used only within their
+    # valid lifetime (e.g., inside the block where they're created).
+    #
+    # === Example
+    #
+    #   stored_frame = nil
+    #   RatatuiRuby.draw { |frame| stored_frame = frame }
+    #   stored_frame.area  # => raises Error::Safety
     class Safety < Error; end
+
+    # State invariant violation.
+    #
+    # The library has rules about valid state transitions.
+    # Calling methods in the wrong order or state breaks invariants.
+    #
+    # This error signals you violated a state machine contract.
+    # The program state doesn't allow this operation right now.
+    #
+    # To resolve, check `terminal_active?` or restructure the
+    # code to ensure methods are called in the expected order.
+    #
+    # === Example
+    #
+    #   RatatuiRuby.init_terminal
+    #   RatatuiRuby.init_terminal  # => raises Error::Invariant
+    class Invariant < Error; end
   end
 
   ##
@@ -58,23 +117,64 @@ module RatatuiRuby
   # [focus_events] whether to enable focus gain/loss events (default: true).
   # [bracketed_paste] whether to enable bracketed paste mode (default: true).
   def self.init_terminal(focus_events: true, bracketed_paste: true)
+    if @tui_session_active
+      raise Error::Invariant, "Cannot initialize terminal: TUI session already active"
+    end
+    @tui_session_active = true
     _init_terminal(focus_events, bracketed_paste)
   end
 
   @experimental_warnings = true
+  @tui_session_active = false
+  @deferred_warnings = []
+
+  ##
+  # Whether a TUI session is currently active.
+  #
+  # Writing to stdout/stderr during a TUI session corrupts the display.
+  # Use this to defer logging, warnings, or debug output until
+  # after the session ends.
+  #
+  # === Example
+  #
+  #   def log(message)
+  #     if RatatuiRuby.terminal_active?
+  #       @deferred_logs << message
+  #     else
+  #       puts message
+  #     end
+  #   end
+  def self.terminal_active?
+    @tui_session_active
+  end
+
   class << self
     ##
     # :attr_accessor: experimental_warnings
     # Whether to show warnings when using experimental features (default: true).
     attr_accessor :experimental_warnings
+
+    private def queue_warning(message)
+      @deferred_warnings << message
+    end
+
+    private def flush_warnings
+      return if @deferred_warnings.empty?
+      @deferred_warnings.each { |msg| warn msg }
+      @deferred_warnings.clear
+    end
   end
 
   ##
-  # :singleton-method: restore_terminal
   # Restores the terminal to its original state.
   # Leaves alternate screen and disables raw mode.
-  #
-  # (Native method implemented in Rust)
+  # Also flushes any deferred warnings that were queued during the session.
+  def self.restore_terminal
+    _restore_terminal
+  ensure
+    @tui_session_active = false
+    flush_warnings
+  end
 
   ##
   # :singleton-method: inject_test_event
@@ -98,12 +198,31 @@ module RatatuiRuby
     @warned_features ||= {}
     return if @warned_features[feature_name]
 
-    warn "WARNING: #{feature_name} is an experimental feature and may change in future versions. Disable this warning with RatatuiRuby.experimental_warnings = false."
+    message = "WARNING: #{feature_name} is an experimental feature and may change in future versions. Disable this warning with RatatuiRuby.experimental_warnings = false."
+    if terminal_active?
+      queue_warning(message)
+    else
+      warn message
+    end
     @warned_features[feature_name] = true
   end
 
-  # (Native method _init_terminal implemented in Rust)
-  private_class_method :_init_terminal
+  ##
+  # Initializes a test terminal for unit testing.
+  # Sets session active state like init_terminal.
+  #
+  # [width] Integer width of the test terminal.
+  # [height] Integer height of the test terminal.
+  def self.init_test_terminal(width, height)
+    if @tui_session_active
+      raise Error::Invariant, "Cannot initialize terminal: TUI session already active"
+    end
+    @tui_session_active = true
+    _init_test_terminal(width, height)
+  end
+
+  # (Native methods implemented in Rust)
+  private_class_method :_init_terminal, :_restore_terminal, :_init_test_terminal
 
   ##
   # Draws the given UI node tree to the terminal.

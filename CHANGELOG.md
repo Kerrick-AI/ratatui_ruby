@@ -12,6 +12,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- **Deferred Warnings During TUI Sessions**: Experimental feature warnings (like `Paragraph#line_count`) are now automatically queued during active TUI sessions and flushed to stderr after `restore_terminal`. This prevents warnings from corrupting the TUI display. See `doc/troubleshooting/tui_output.md` for details on handling terminal output during TUI sessions.
+- **Session State Tracking**: `RatatuiRuby.terminal_active?` indicates whether a TUI session is active. Calling `init_terminal` or `init_test_terminal` while a session is already active now raises `Error::Invariant`.
+- **Error::Invariant**: New error class for state invariant violations (e.g., double-init). Distinct from `Error::Safety` (lifetime violations) and `Error::Terminal` (operational I/O failures).
 ### Changed
 
 ### Fixed

@@ -48,6 +48,9 @@ module RatatuiRuby
       #     # render and test your app
       #   end
       def with_test_terminal(width = 80, height = 24, **opts)
+        # Defensive cleanup: reset any stale session state from previous test failures
+        RatatuiRuby.instance_variable_set(:@tui_session_active, false)
+
         RatatuiRuby.init_test_terminal(width, height)
         # Flush any lingering events from previous tests
         while (event = RatatuiRuby.poll_event) && !event.none?; end
