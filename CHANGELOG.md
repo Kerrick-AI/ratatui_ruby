@@ -20,6 +20,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
+- **Direct Text Rendering**: `Text::Line` and `Text::Span` can now be rendered directly as widgets via `frame.render_widget(line, area)` without wrapping in a `Paragraph`. Previously, these text primitives were silently ignored when passed to `render_widget`.
+- **Text Line Alignment**: `Text::Line` `alignment:` parameter is now respected during rendering. Previously, the alignment was ignored and text always rendered left-aligned.
+
 ### Removed
 
 ## [0.7.3] - 2026-01-04

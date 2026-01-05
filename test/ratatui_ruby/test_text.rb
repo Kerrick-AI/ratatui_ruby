@@ -109,6 +109,38 @@ module RatatuiRuby
       assert_equal 4, line.width
     end
 
+    # Text::Line should be renderable directly as a widget
+    def test_line_renders_directly_as_widget
+      with_test_terminal(10, 1) do
+        line = RatatuiRuby::Text::Line.new(
+          spans: [RatatuiRuby::Text::Span.new(content: "Direct")]
+        )
+
+        # Render the line directly without wrapping in Paragraph
+        RatatuiRuby.draw { |f| f.render_widget(line, f.area) }
+
+        cell = RatatuiRuby.get_cell_at(0, 0)
+        assert_equal "D", cell.char, "Text::Line should render directly as a widget"
+      end
+    end
+
+    # Text::Line alignment should be respected when rendering directly
+    def test_line_alignment_rendering
+      with_test_terminal(10, 1) do
+        # Create a centered line - "Hi" is 2 chars, so it should start at position 4 in a 10-char area
+        line = RatatuiRuby::Text::Line.new(
+          spans: [RatatuiRuby::Text::Span.new(content: "Hi")],
+          alignment: :center
+        )
+
+        RatatuiRuby.draw { |f| f.render_widget(line, f.area) }
+
+        # In a 10-char area, "Hi" (2 chars) centered should start at position 4
+        cell_start = RatatuiRuby.get_cell_at(4, 0)
+        assert_equal "H", cell_start.char, "Centered text should start at position 4"
+      end
+    end
+
     # v0.7.0: Text::Line style: parameter should be applied during rendering
     def test_line_style_rendering
       with_test_terminal(10, 1) do

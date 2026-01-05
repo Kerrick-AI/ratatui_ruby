@@ -133,6 +133,8 @@ pub fn parse_line(value: Value) -> Result<Line<'static>, Error> {
     let spans_val: Value = value.funcall("spans", ())?;
     // v0.7.0: Extract style from the Ruby Line
     let style_val: Value = value.funcall("style", ())?;
+    // Extract alignment from the Ruby Line
+    let alignment_val: Value = value.funcall("alignment", ())?;
 
     if spans_val.is_nil() {
         return Ok(Line::from(""));
@@ -175,6 +177,30 @@ pub fn parse_line(value: Value) -> Result<Line<'static>, Error> {
     // v0.7.0: Apply line-level style if present
     if !style_val.is_nil() {
         line = line.style(parse_style(style_val)?);
+    }
+
+    // Apply alignment if present
+    if !alignment_val.is_nil() {
+        if let Ok(alignment_sym) = magnus::Symbol::try_convert(alignment_val) {
+            let alignment_str = alignment_sym.name().map_err(|e| {
+                Error::new(
+                    ruby.exception_type_error(),
+                    format!("Invalid alignment symbol: {e}"),
+                )
+            })?;
+            let alignment = match alignment_str.as_ref() {
+                "left" => ratatui::layout::Alignment::Left,
+                "center" => ratatui::layout::Alignment::Center,
+                "right" => ratatui::layout::Alignment::Right,
+                _ => {
+                    return Err(Error::new(
+                        ruby.exception_arg_error(),
+                        format!("Invalid alignment: {alignment_str}. Valid values: :left, :center, :right"),
+                    ));
+                }
+            };
+            line = line.alignment(alignment);
+        }
     }
 
     Ok(line)

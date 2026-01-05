@@ -60,6 +60,15 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: Value) -> Result<(), Err
         "RatatuiRuby::Widgets::RatatuiMascot" => {
             widgets::ratatui_mascot::render_ratatui_mascot(frame, area, node)?;
         }
+        // Text primitives can also be rendered directly as widgets
+        "RatatuiRuby::Text::Line" => {
+            let line = crate::text::parse_line(node)?;
+            frame.render_widget(line, area);
+        }
+        "RatatuiRuby::Text::Span" => {
+            let span = crate::text::parse_span(node)?;
+            frame.render_widget(span, area);
+        }
         _ => {}
     }
     Ok(())
