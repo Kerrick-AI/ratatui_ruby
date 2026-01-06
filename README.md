@@ -143,12 +143,3 @@ Want to help develop **ratatui_ruby**? Check out the [contribution guide on the 
 Some parts of this program are copied from other sources under appropriate reuse licenses, and the copyright belongs to their respective owners. See the [REUSE Specification – Version 3.3](https://reuse.software/spec-3.3/) for information about how we comply with attribution and licensing requirements.
 
 This program was created with significant assistance from multiple LLMs. The process was human-controlled through creative prompts, with human contributions to each commit. See commit footers for model attribution. [declare-ai.org](https://declare-ai.org/1.0.0/creative.html)
-
-## Agent Rake Report
-
-The `bin/agent_rake` command was executed to verify the environment and codebase integrity. It performed the following checks:
-- Compilation of Rust extensions.
-- Ruby test suite execution.
-- Linting and static analysis.
-
-All checks passed successfully.
