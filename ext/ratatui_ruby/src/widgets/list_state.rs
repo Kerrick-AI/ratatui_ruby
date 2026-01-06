@@ -78,6 +78,11 @@ impl RubyListState {
         self.inner.borrow_mut().scroll_up_by(amount);
     }
 
+    /// Selects the next item.
+    pub fn select_next(&self) {
+        self.inner.borrow_mut().select_next();
+    }
+
     /// Borrows the inner `ListState` mutably for rendering.
     ///
     /// # Safety
@@ -98,6 +103,7 @@ pub fn register(ruby: &Ruby, module: magnus::RModule) -> Result<(), Error> {
     class.define_method("offset", method!(RubyListState::offset, 0))?;
     class.define_method("scroll_down_by", method!(RubyListState::scroll_down_by, 1))?;
     class.define_method("scroll_up_by", method!(RubyListState::scroll_up_by, 1))?;
+    class.define_method("select_next", method!(RubyListState::select_next, 0))?;
     Ok(())
 }
 
